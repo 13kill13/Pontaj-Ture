@@ -1,0 +1,12 @@
+{
+  "id": "unk_ca44075edf1aeccf",
+  "revision": 2,
+  "question": "În contextul ROOT (folderul ~/Documents/Craft Anything/Pontaj Ture), deschis offline după instalarea Service Worker-ului: se afișează pagina și calculatorul rămâne utilizabil?",
+  "severity": "high",
+  "domain": "general",
+  "status": "resolved",
+  "probes": [],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "index.html, app.js, guides.js, guides-data.json exist în root și sunt în ASSETS (sw.js). Install-ul devine toleranță la lipsa helperelor generate (supabase.js, holidays-data.js, mechanics-data.js, guides-data.js — 404 în root, există în dist): se cache-ază orașele disponibile și app.js are valori de întâmpinare (HOLIDAYS_DATA default, supabaseClient null). Rezultat: modul offline rulează cu datele locale; validarea fină (browser offline) rămâne un pas manual."
+}

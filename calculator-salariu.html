@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Calculator Salariu Net — cu Sporuri de Tură | Pontaj Ture</title>
+  <meta name="description" content="Calculează rapid salariul net din brut, pe luna și anul alese, cu sporuri de noapte, SDSL (weekend + zile libere legale), ore suplimentare și alte sporuri adăugate de tine. Gratuit, fără înregistrare." />
+  <link rel="canonical" href="calculator-salariu.html" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background:#f5f5f5; }
+    .wrap { background:#fff; }
+    .breadcrumb { font-size:13px; color:#1D9E75; margin-bottom:1rem; }
+    .breadcrumb a { color:#1D9E75; text-decoration:none; }
+    h1 { font-size:22px; font-weight:600; color:#1a1a1a; margin:0 0 8px; }
+    h2 { font-size:17px; font-weight:600; color:#1a1a1a; margin:1.6rem 0 8px; }
+    p { font-size:14px; color:#666; line-height:1.6; }
+    ul { font-size:14px; color:#666; line-height:1.7; padding-left:20px; }
+    a { color:#1D9E75; }
+    .calc-card { background:#f5f5f5; border-radius:12px; padding:1.25rem; margin-bottom:1rem; }
+    .input-group { margin-bottom:1rem; }
+    .input-group label { font-size:13px; color:#666; display:block; margin-bottom:5px; }
+    .input-group input, .input-group select {
+      width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+      font-size:15px; background:#fff; box-sizing:border-box;
+    }
+    .calc-btn {
+      width:100%; padding:12px; background:#1D9E75; color:white; border:none;
+      border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; margin-top:0.5rem;
+    }
+    .calc-btn:hover { background:#178060; }
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:1rem; }
+    .result-item { background:#fff; border-radius:10px; padding:12px; text-align:center; border:1px solid #eee; }
+    .result-item.highlight { background:#f0faf6; border-color:#1D9E75; grid-column:1 / -1; }
+    .result-val { font-size:22px; font-weight:700; color:#1a1a1a; }
+    .result-item.highlight .result-val { font-size:28px; color:#1D9E75; }
+    .result-lbl { font-size:11px; color:#666; margin-top:3px; }
+    .divider { border:none; border-top:1px solid #eee; margin:1.5rem 0; }
+    .info-box {
+      background:#FFF9C4; border-left:4px solid #F5C623; border-radius:8px;
+      padding:10px 14px; font-size:13px; color:#7A5800; margin-bottom:1rem;
+    }
+    .faq-list dt { font-weight:600; color:#1a1a1a; margin-top:0.75rem; font-size:14px; }
+    .faq-list dd { margin-left:0; color:#666; font-size:14px; }
+    .table-note { font-size:12px; color:#999; margin-top:-0.5rem; }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin:10px 0; }
+    th, td { text-align:left; padding:8px; border-bottom:1px solid #eee; color:#444; }
+    th { background:#f5f5f5; color:#333; }
+    .cta-box { background:#f0faf6; border-radius:10px; padding:12px 16px; margin:1rem 0; }
+    .cta-box p { margin:0; font-size:13px; }
+    .sml { color:#999; font-size:11px; margin-top:4px; display:block; }
+    .spor-head { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+    .spor-row { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+    .spor-row input { padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff; box-sizing:border-box; }
+    .spor-row .s-name { flex:2; min-width:0; }
+    .spor-row .s-pct { width:64px; }
+    .spor-row .s-sum { width:78px; }
+    .spor-row .s-ore { width:70px; }
+    .spor-del { background:#fff; border:1px solid #f3c2c2; color:#c0392b; border-radius:8px; cursor:pointer; font-size:15px; width:34px; height:34px; flex:none; }
+    .add-spor { background:#fff; border:1px dashed #1D9E75; color:#1D9E75; border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; }
+    .add-spor:hover { background:#f0faf6; }
+    .pull-btn { background:#eef7f3; border:1px solid #1D9E75; color:#1D9E75; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .pull-btn:hover { background:#dff2ea; }
+    .inline-field { display:flex; gap:10px; align-items:center; }
+    .inline-field input { flex:1; min-width:0; }
+    .field-note { font-size:11px; color:#1D9E75; min-height:14px; margin-top:4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="breadcrumb"><a href="index.html">← Pontaj Ture</a></nav>
+
+    <h1>Calculator Salariu Net</h1>
+    <p>Calculează salariul net din brut, cu toate deducerile fiscale românești, spor de noapte, ore suplimentare și orice alte sporuri adaugi tu.</p>
+
+    <hr class="divider" />
+
+    <div class="calc-card">
+      <div class="input-group">
+        <label>Luna și anul pentru calcul</label>
+        <div class="inline-field">
+          <select id="sal-luna" style="flex:2"></select>
+          <select id="sal-an" style="flex:1"></select>
+        </div>
+        <small class="sml">Norma lunii și orele SDSL (weekend + zile libere legale) se preiau automat din luna și anul alese.</small>
+      </div>
+
+      <div class="input-group">
+        <label>Salariu brut de bază (lei)</label>
+        <input type="number" id="brut" placeholder="ex: 5000" min="0" step="100" />
+      </div>
+
+      <div class="input-group">
+        <label>Ore de noapte în luna asta</label>
+        <div style="display:flex; gap:10px;">
+          <input type="number" id="ore-noapte" placeholder="ex: 48" min="0" step="1" value="0" style="flex:2" />
+          <div style="flex:1; position:relative;">
+            <input type="number" id="procent-noapte" placeholder="%" min="0" max="100" step="1" value="25" style="width:100%; padding-right:28px; box-sizing:border-box;" />
+            <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#666; font-size:13px; pointer-events:none;">%</span>
+          </div>
+        </div>
+        <div style="margin-top:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="pull-btn" id="pull-noapte">🌙 Preia orele de noapte din calendar</button>
+          <div class="field-note" id="noapte-note" style="margin-top:0"></div>
+        </div>
+        <small class="sml">Se completează automat cu orele turelor de noapte din lunii/anului aleși. Îl poți edita liber; butonul de mai sus îl reîmprospătează. Sporul de noapte implicit e 25% (legal).</small>
+      </div>
+
+      <div class="input-group">
+        <label>Ore suplimentare în luna asta</label>
+        <div style="display:flex; gap:10px;">
+          <input type="number" id="ore-extra" placeholder="ex: 10" min="0" step="1" value="0" style="flex:2" />
+          <div style="flex:1; position:relative;">
+            <input type="number" id="procent-extra" placeholder="%" min="0" max="200" step="1" value="75" style="width:100%; padding-right:28px; box-sizing:border-box;" />
+            <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#666; font-size:13px; pointer-events:none;">%</span>
+          </div>
+        </div>
+        <small class="sml">Sporul legal minim e 75%. Modifică dacă firma ta aplică alt procent.</small>
+      </div>
+
+      <div class="input-group">
+        <label>Ore de weekend + zile libere legale (SDSL)</label>
+        <div class="inline-field">
+          <input type="number" id="ore-weekend" placeholder="ex: 16" min="0" step="1" value="0" />
+          <button type="button" class="pull-btn" id="pull-weekend">📅 Preia SDSL din calendar</button>
+        </div>
+        <div class="field-note" id="weekend-note"></div>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <div style="flex:1;">
+            <small class="sml">Procent spor SDSL</small>
+            <input type="number" id="procent-weekend" placeholder="%" min="0" max="200" step="1" value="50" />
+          </div>
+        </div>
+        <small class="sml">Se actualizează automat din calendar cu orele care cad efectiv sâmbăta, duminica sau într-o zi liberă legală, în luna și anul alese. Turele care trec de miezul nopții se împart la 23:59 / 00:00; orele de noapte lucrate în zile de lucru <b>nu</b> sunt SDSL. Îl poți edita manual; butonul „Preia SDSL” recalculează din calendar.</small>
+      </div>
+
+      <div class="input-group">
+        <div class="spor-head">
+          <label style="margin:0">Alte sporuri (opțional)</label>
+          <button type="button" class="add-spor" id="add-spor">+ Adaugă spor</button>
+        </div>
+        <div id="alte-sporuri"></div>
+        <small class="sml">Adaugă orice spor din contract (weekend, sărbători, continuitate, pregătire, psihologic etc.). Fiecare spor poate avea: procent din salariul de bază, sumă fixă în lei și/sau număr de ore. Orele se plătesc la tariful orar înmulțit cu procentul sporului (dacă nu pui procent, se folosește 100%). Exemplu: „Spor weekend” 16 ore, 50% → 16 × tarif orar × 50%.</small>
+      </div>
+
+      <div class="input-group">
+        <label>Norma lunii (ore)</label>
+        <select id="norma-select">
+          <option value="144">Ianuarie 2026 — 144 ore</option>
+          <option value="160" selected>Februarie 2026 — 160 ore</option>
+          <option value="176">Martie 2026 — 176 ore</option>
+          <option value="160">Aprilie 2026 — 160 ore</option>
+          <option value="152">Mai 2026 — 152 ore</option>
+          <option value="160">Iunie 2026 — 160 ore</option>
+          <option value="184">Iulie 2026 — 184 ore</option>
+          <option value="168">August 2026 — 168 ore</option>
+          <option value="176">Septembrie 2026 — 176 ore</option>
+          <option value="176">Octombrie 2026 — 176 ore</option>
+          <option value="152">Noiembrie 2026 — 152 ore</option>
+          <option value="168">Decembrie 2026 — 168 ore</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Persoane în întreținere (pentru deducere personală)</label>
+        <select id="dependenti">
+          <option value="0">Fără persoane în întreținere</option>
+          <option value="1">1 persoană</option>
+          <option value="2">2 persoane</option>
+          <option value="3">3 persoane</option>
+          <option value="4">4+ persoane</option>
+        </select>
+      </div>
+
+      <button class="calc-btn" id="calc-btn">Calculează salariul net</button>
+    </div>
+
+    <div id="rezultate" style="display:none">
+      <div class="info-box" id="info-box"></div>
+      <div class="result-grid" id="result-grid"></div>
+    </div>
+
+    <hr class="divider" />
+
+    <h2>Cum se calculează salariul net din brut</h2>
+    <p>Salariul net reprezintă suma pe care o primești efectiv în cont, după ce din salariul brut se scad contribuțiile sociale obligatorii și impozitul pe venit. În 2026, calculul se face astfel:</p>
+    <ul>
+      <li><strong>CAS (contribuția la pensie): 25%</strong> din salariul brut</li>
+      <li><strong>CASS (contribuția la sănătate): 10%</strong> din salariul brut</li>
+      <li><strong>Impozit pe venit: 10%</strong>, aplicat la baza de calcul rămasă după scăderea CAS și CASS (și, dacă e cazul, a deducerii personale)</li>
+    </ul>
+    <p>Formula simplificată: <strong>Salariu net = Salariu brut − CAS (25%) − CASS (10%) − Impozit (10% din rest)</strong></p>
+    <p>Pentru angajații care lucrează în ture, la acest calcul se adaugă sporurile (noapte, weekend, ore suplimentare, precum și sporurile adăugate de tine), care se aplică la salariul brut înainte de scăderea contribuțiilor.</p>
+
+    <h2>Exemplu concret de calcul</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Salariu brut</th><th>CAS (25%)</th><th>CASS (10%)</th><th>Bază impozabilă</th><th>Impozit (10%)</th><th>Salariu net aproximativ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>3.700 RON</td><td>925 RON</td><td>370 RON</td><td>2.405 RON</td><td>240 RON</td><td>~2.165 RON</td></tr>
+        <tr><td>4.500 RON</td><td>1.125 RON</td><td>450 RON</td><td>2.925 RON</td><td>292 RON</td><td>~2.633 RON</td></tr>
+        <tr><td>6.000 RON</td><td>1.500 RON</td><td>600 RON</td><td>3.900 RON</td><td>390 RON</td><td>~3.510 RON</td></tr>
+      </tbody>
+    </table>
+    <p class="table-note"><em>Valorile sunt orientative și nu includ deduceri personale sau alte particularități fiscale individuale.</em></p>
+
+    <h2>Sporurile pentru muncă în ture</h2>
+    <p>Dacă lucrezi în schimburi, salariul tău brut poate include sporuri suplimentare față de salariul de bază:</p>
+    <ul>
+      <li><strong>Sporul de noapte</strong> — minimum 25% din salariul de bază, pentru orele lucrate între 22:00 și 6:00</li>
+      <li><strong>Sporul SDSL (weekend + zile libere legale)</strong> — variază în funcție de contractul colectiv de muncă, dar frecvent 100% sau zi liberă compensatorie</li>
+      <li><strong>Orele suplimentare</strong> — se compensează fie cu spor salarial (minimum 75%), fie cu timp liber corespunzător, conform Codului Muncii</li>
+    </ul>
+    <p>Aceste sporuri se adaugă la salariul brut de bază, iar calculul salariului net trebuie făcut pe suma totală (bază + sporuri), nu doar pe salariul de bază. În plus, poți adăuga propriile sporuri în căsuța „Alte sporuri” de mai sus.</p>
+
+    <div class="cta-box">
+      <p>Pentru a-ți calcula exact programul de ture, orele lucrate și sporurile aferente lunii curente, poți folosi <a href="index.html">Pontaj Ture</a> — instrumentul nostru gratuit pentru lucrătorii în schimburi.</p>
+    </div>
+
+    <h2>Întrebări frecvente</h2>
+    <dl class="faq-list">
+      <dt>Cât e salariul minim net în 2026?</dt>
+      <dd>Salariul minim brut pe economie se stabilește anual prin hotărâre de guvern. Din salariul minim brut, după scăderea CAS, CASS și impozitului, rezultă salariul minim net — verifică valoarea actualizată pentru anul curent, deoarece se poate modifica prin acte normative.</dd>
+      <dt>Ce diferență e între salariul brut și salariul net?</dt>
+      <dd>Salariul brut e suma stabilită prin contractul de muncă, înainte de reținerile obligatorii. Salariul net e suma primită efectiv în cont, după scăderea CAS (25%), CASS (10%) și impozitului pe venit (10%).</dd>
+      <dt>Sporurile de tură intră în calculul impozitului?</dt>
+      <dd>Da. Sporurile (noapte, weekend, ore suplimentare și orice alte sporuri) se adaugă la salariul brut de bază, iar impozitul și contribuțiile se calculează pe suma totală, nu doar pe salariul de bază.</dd>
+      <dt>Există deducere personală pentru calculul impozitului?</dt>
+      <dd>Da, în funcție de nivelul venitului brut și numărul de persoane aflate în întreținere, se poate aplica o deducere personală care reduce baza impozabilă. Aceasta variază de la caz la caz.</dd>
+      <dt>Pot calcula și salariul brut pornind de la cel net?</dt>
+      <dd>Calculul invers (din net în brut) presupune formule diferite, fiindcă procentele nu se aplică simplu invers. Dacă ai nevoie de acest calcul, contactează-ne sau verifică cu un specialist în contabilitate/HR.</dd>
+    </dl>
+
+    <div class="cta-box">
+      <p>Calculează-ți și programul de ture cu <a href="index.html">Pontaj Ture</a> — gratuit.</p>
+    </div>
+  </div>
+
+  <script src="holidays-data.js"></script>
+  <script src="mechanics-data.js"></script>
+  <script>
+    var BONUS_KEY = 'salariu-net-sporuri-v1';
+    var bonusSeq = 0;
+
+    function getDeducere(brut, dependenti) {
+      // Deducere personală 2026 conform legislației (identică cu site-ul de referință)
+      if (brut <= 2000) {
+        var baza = [300, 400, 500, 600, 700][Math.min(dependenti, 4)];
+        return baza;
+      } else if (brut <= 3600) {
+        var baza2 = [300, 400, 500, 600, 700][Math.min(dependenti, 4)];
+        return Math.round(baza2 * (1 - (brut - 2000) / 1600));
+      }
+      return 0;
+    }
+
+    function fmt(n) { return Number(n || 0).toLocaleString('ro-RO'); }
+    function round2(n) { return Math.round(n * 100) / 100; }
+
+    function addSpor(name, pct, suma, ore) {
+      var box = document.getElementById('alte-sporuri');
+      var row = document.createElement('div');
+      row.className = 'spor-row';
+      row.dataset.sid = ++bonusSeq;
+      row.innerHTML =
+        '<input type="text" class="s-name" placeholder="Denumire (ex. Spor weekend)" maxlength="40" />' +
+        '<input type="number" class="s-pct" placeholder="%" min="0" max="500" step="1" title="Procent din salariul de bază" />' +
+        '<input type="number" class="s-sum" placeholder="Lei" min="0" step="1" title="Sumă fixă în lei" />' +
+        '<input type="number" class="s-ore" placeholder="Ore" min="0" step="0.5" title="Număr de ore la care se aplică sporul" />' +
+        '<button type="button" class="spor-del" title="Șterge sporul">✕</button>';
+      row.querySelector('.s-name').value = name || '';
+      row.querySelector('.s-pct').value = (pct === undefined || pct === null) ? '' : pct;
+      row.querySelector('.s-sum').value = (suma === undefined || suma === null) ? '' : suma;
+      row.querySelector('.s-ore').value = (ore === undefined || ore === null) ? '' : ore;
+      row.querySelector('.spor-del').addEventListener('click', function () { row.remove(); saveSporuri(); });
+      box.appendChild(row);
+      return row;
+    }
+
+    function readSporuri() {
+      return Array.prototype.map.call(document.querySelectorAll('#alte-sporuri .spor-row'), function (row) {
+        return {
+          name: row.querySelector('.s-name').value.trim(),
+          pct: parseFloat(row.querySelector('.s-pct').value) || 0,
+          suma: parseFloat(row.querySelector('.s-sum').value) || 0,
+          ore: parseFloat(row.querySelector('.s-ore').value) || 0
+        };
+      });
+    }
+
+    function saveSporuri() {
+      try { localStorage.setItem(BONUS_KEY, JSON.stringify(readSporuri())); } catch (e) {}
+    }
+
+    function loadSporuri() {
+      var arr = [];
+      try { arr = JSON.parse(localStorage.getItem(BONUS_KEY)) || []; } catch (e) {}
+      if (!Array.isArray(arr)) arr = [];
+      arr.forEach(function (b) { addSpor(b.name, b.pct, b.suma, b.ore); });
+    }
+
+    // SDSL = orele lucrate sâmbăta, duminica și în zilele libere legale,
+    // preluate din luna/anul alese, din calendarul activ salvat în browser.
+    var WEEKEND_KEY = 'salariu-net-sdsl-v1';
+    var NORMA = {
+      2025:[168,160,168,168,160,168,184,168,176,184,160,160],
+      2026:[144,160,176,160,160,168,184,168,176,176,160,168]
+    };
+    var MONTHS = ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+    var MECH = window.APK_MECHANICS || null;
+    var HDAY = window.HOLIDAYS_DATA || { days:{} };
+
+    function activeCalendar() {
+      try {
+        var raw = localStorage.getItem('ore-ture-state-v1');
+        if (!raw) return null;
+        var st = JSON.parse(raw);
+        var cal = (st.calendars || []).filter(function (c) { return c.id === st.activeId; })[0];
+        return cal || (st.calendars || [])[0] || null;
+      } catch (e) { return null; }
+    }
+    function normaFor(y, m) {
+      if (NORMA[y] && NORMA[y][m] != null) return NORMA[y][m];
+      var wd = 0, dim = new Date(y, m + 1, 0).getDate();
+      for (var d = 1; d <= dim; d++) { var dow = new Date(y, m, d).getDay(); if (dow !== 0 && dow !== 6) wd++; }
+      return wd * 8;
+    }
+    function isLegalDate(dt) {
+      var y = dt.getFullYear(), m = dt.getMonth(), d = dt.getDate();
+      var k = y + '-' + (m + 1) + '-' + d;
+      // Aceeași sursă autoritară ca în calendar: Codul Muncii, art. 139.
+      // O zi de vacanță sau o punte nu devine ZL doar pentru că e colorată altfel.
+      var rules = HDAY.legalRules;
+      if (rules && rules.fixed) {
+        var mv = (rules.movable || {})[y] || {};
+        return !!((rules.fixed)[(m + 1) + '-' + d] || mv[k]);
+      }
+      var v = HDAY.days && HDAY.days[k];
+      if (!v) return false;
+      return (Array.isArray(v) ? v : [v]).some(function (x) { return x && x.cat === 'legal'; });
+    }
+    function isSdslDate(dt) {
+      return dt.getDay() === 0 || dt.getDay() === 6 || isLegalDate(dt);
+    }
+    function shiftHoursLocal(t) {
+      if (!t) return 0;
+      if (t.clock && MECH && typeof MECH.shiftHours === 'function') return MECH.shiftHours(t);
+      return Number(t.hours) || 0;
+    }
+    function dayKey(dt) {
+      return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+    }
+    function effectiveInfoLocal(cal, dt) {
+      var k = dayKey(dt);
+      var det = (cal.dayDetails || {})[k];
+      var ids = cal.assignments[k] || [];
+      // Editarea manuală a orelor zilei are prioritate, ca în calendarul principal.
+      if (det && det.hoursOverride != null && det.hoursOverride !== '') {
+        return { hours: Number(det.hoursOverride) || 0, type: null };
+      }
+      // Tura adăugată ultima determină orele zilei (turele suprapuse nu se adună).
+      var t = (cal.types || []).filter(function (x) { return x.id === ids[ids.length - 1]; })[0];
+      if (!t || t.group === 'leave' || t.blank === true) return { hours: 0, type: null };
+      var code = String(t.code || t.id || '').toUpperCase();
+      if (code === 'L' || code === 'LIBER') return { hours: 0, type: null };
+      return { hours: shiftHoursLocal(t), type: t };
+    }
+    // Aceeași regulă ca în panoul principal (o sursă de adevăr, nu un calcul separat):
+    // o zi se termină la 23:59, de la 00:00 e altă zi; turele care trec de miezul
+    // nopții se împart pe zile calendaristice; SDSL = DOAR orele care cad sâmbăta,
+    // duminica sau într-o zi liberă legală. O tură de noapte nu e SDSL prin ea însăși.
+    function partMinutesLocal(start, end) {
+      if (!start || !end) return 0;
+      var sh = parseInt(String(start).slice(0, 2), 10) || 0, sm = parseInt(String(start).slice(3, 5), 10) || 0;
+      var eh = parseInt(String(end).slice(0, 2), 10) || 0, em = parseInt(String(end).slice(3, 5), 10) || 0;
+      if (sh > eh || (sh === eh && sm > em)) eh += 24;
+      var h = eh - sh;
+      var mm = em >= sm ? em - sm : (em + 60) - sm;
+      if (em < sm) h -= 1;
+      return h * 60 + mm;
+    }
+    function toMinLocal(s) { var p = String(s).split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); }
+    function roundLocal(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+    function isNightTypeLocal(t) {
+      if (!t) return false;
+      var code = String(t.code || t.id || '').toUpperCase();
+      var name = String(t.name || '').toLowerCase();
+      if (code === 'N' || code === 'NOAPTE') return true;
+      if (/noapte|night|noche/.test(name)) return true;
+      var clock = t.clock;
+      if (clock && clock.start && clock.end && MECH && typeof MECH.compareTimes === 'function' &&
+          MECH.compareTimes(clock.start, clock.end) === 2) {
+        var h = parseInt(String(clock.start).slice(0, 2), 10) || 0;
+        if (h >= 18) return true;
+      }
+      return false;
+    }
+    function sdslKindLocal(dt) {
+      if (isLegalDate(dt)) return 'legal';
+      return (dt.getDay() === 0 || dt.getDay() === 6) ? 'weekend' : '';
+    }
+    function sdslDinCalendarDetails(y, m) {
+      var cal = activeCalendar();
+      var empty = { total:0, weekend:0, legal:0, night:0, nightOutside:0 };
+      if (!cal) return empty;
+      var daysMap = {};
+      function dkey(yy, mm, dd) { return yy + '-' + mm + '-' + dd; }
+      function ensure(yy, mm, dd) {
+        var k = dkey(yy, mm, dd);
+        if (!daysMap[k]) daysMap[k] = { minutes:0, parts:[], kind:sdslKindLocal(new Date(yy, mm, dd)) };
+        return daysMap[k];
+      }
+      function addWork(yy, mm, dd, minutes, night) {
+        if (minutes <= 0) return;
+        var rec = ensure(yy, mm, dd);
+        rec.minutes += minutes;
+        rec.parts.push({ hours: minutes / 60, night: !!night });
+      }
+      var dim = new Date(y, m + 1, 0).getDate();
+      for (var d = 1; d <= dim; d++) {
+        var dt = new Date(y, m, d);
+        var info = effectiveInfoLocal(cal, dt);
+        if (info.hours <= 0) continue;
+        var ids = (cal.assignments || {})[dayKey(dt)] || [];
+        var src = info.type;
+        if (!src) {
+          for (var z = ids.length - 1; z >= 0; z--) {
+            var cand = (cal.types || []).filter(function (x) { return x.id === ids[z]; })[0];
+            if (cand && cand.clock && cand.clock.start && cand.clock.end) { src = cand; break; }
+          }
+        }
+        var det = (cal.dayDetails || {})[dayKey(dt)];
+        var manual = det && det.hoursOverride != null && det.hoursOverride !== '';
+        var nightShift = isNightTypeLocal(src);
+        var clock = src && src.clock;
+        var segments = [];
+        if (clock && clock.start && clock.end && clock.start !== clock.end) {
+          var parts = [{ start:clock.start, end:clock.end }];
+          if (clock.split && clock.start2 && clock.end2) parts.push({ start:clock.start2, end:clock.end2 });
+          segments = parts.map(function (p) {
+            return { start:p.start, minutes:Math.max(0, partMinutesLocal(p.start, p.end)) };
+          });
+          var raw = segments.reduce(function (s, x) { return s + x.minutes; }, 0);
+          var brk = Math.max(0, Number(src.breakMin) || 0);
+          if (brk > 0 && raw > 0) {
+            var f = Math.max(0, raw - brk) / raw;
+            segments.forEach(function (x) { x.minutes = x.minutes * f; });
+          }
+          if (manual) {
+            var now = segments.reduce(function (s, x) { return s + x.minutes; }, 0);
+            if (now > 0) segments.forEach(function (x) { x.minutes = x.minutes * info.hours / now; });
+          }
+        }
+        if (!segments.length) { addWork(y, m, d, Math.round(info.hours * 60), nightShift); continue; }
+        segments.forEach(function (seg) {
+          var sm = toMinLocal(seg.start), endMin = sm + seg.minutes;
+          var cy = y, cm = m, cd = d, guard = 0;
+          while (sm < endMin - 1e-6 && guard++ < 10) {
+            var dayEnd = sm < 1440 ? 1440 : sm + 1440;
+            var slice = Math.min(endMin, dayEnd) - sm;
+            if (slice > 0) addWork(cy, cm, cd, slice, nightShift);
+            sm = dayEnd;
+            if (sm >= endMin - 1e-6) break;
+            var nx = new Date(cy, cm, cd + 1);
+            cy = nx.getFullYear(); cm = nx.getMonth(); cd = nx.getDate();
+          }
+        });
+      }
+      var list = Object.keys(daysMap).map(function (k) { return daysMap[k]; });
+      function sum(pred) {
+        var t = 0;
+        list.filter(pred).forEach(function (x) { t += x.minutes / 60; });
+        return roundLocal(t);
+      }
+      function nightSum(pred) {
+        var t = 0;
+        list.filter(pred).forEach(function (x) {
+          x.parts.forEach(function (p) { if (p.night) t += p.hours; });
+        });
+        return roundLocal(t);
+      }
+      return {
+        total: sum(function (x) { return !!x.kind; }),
+        weekend: sum(function (x) { return x.kind === 'weekend'; }),
+        legal: sum(function (x) { return x.kind === 'legal'; }),
+        night: nightSum(function (x) { return !!x.kind; }),
+        nightOutside: nightSum(function (x) { return !x.kind; })
+      };
+    }
+    function sdslDinCalendar(y, m) { return sdslDinCalendarDetails(y, m).total; }
+    // Orele de noapte se preiau din calendarul activ: tura N (sau orice tură cu
+    // nume/ cod de noapte ori cu ore de pontare care trec de miezul nopții).
+    function isNightType(t) {
+      if (!t) return false;
+      var code = String(t.code || t.id || '').toUpperCase();
+      var name = String(t.name || '').toLowerCase();
+      if (code === 'N') return true;
+      if (/noapte|night|noche/.test(name)) return true;
+      var clock = t.clock;
+      if (clock && clock.start && clock.end && MECH && typeof MECH.compareTimes === 'function') {
+        var h = parseInt(String(clock.start).slice(0, 2), 10) || 0;
+        if (h >= 18 && MECH.compareTimes(clock.start, clock.end) === 2) return true;
+      }
+      return false;
+    }
+    function nightDinCalendar(y, m) {
+      var cal = activeCalendar();
+      if (!cal) return 0;
+      var total = 0;
+      var dim = new Date(y, m + 1, 0).getDate();
+      for (var d = 1; d <= dim; d++) {
+        var info = effectiveInfoLocal(cal, new Date(y, m, d));
+        if (info.hours <= 0) continue;
+        if (info.type && isNightType(info.type)) { total += info.hours; continue; }
+        var ids = (cal.assignments || {})[dayKey(new Date(y, m, d))] || [];
+        for (var i = ids.length - 1; i >= 0; i--) {
+          var t = (cal.types || []).filter(function (x) { return x.id === ids[i]; })[0];
+          if (t && isNightType(t)) { total += info.hours; break; }
+        }
+      }
+      return Math.round(total * 100) / 100;
+    }
+    function nightKey(y, m) { return 'salariu-net-noapte-v1-' + y + '-' + (m + 1); }
+    function preiaNoapte() {
+      var ore = nightDinCalendar(selY(), selM());
+      document.getElementById('ore-noapte').value = ore;
+      var n = document.getElementById('noapte-note');
+      if (n) n.textContent = '✓ Preluat din calendar: ' + ore + ' ore de noapte (' + MONTHS[selM()] + ' ' + selY() + ', poți edita).';
+      try { localStorage.setItem(nightKey(selY(), selM()), String(ore)); } catch (e) {}
+    }
+    function loadNoapte() {
+      var saved = null;
+      try { saved = localStorage.getItem(nightKey(selY(), selM())); } catch (e) {}
+      if (saved !== null) {
+        document.getElementById('ore-noapte').value = saved;
+        var n = document.getElementById('noapte-note');
+        if (n) n.textContent = 'Valoarea ta salvată pentru ' + MONTHS[selM()] + ' ' + selY() + '. Apasă „Preia” pentru a o reîmprospăta.';
+      } else {
+        preiaNoapte();
+      }
+    }
+    function selY() { return parseInt(document.getElementById('sal-an').value, 10) || 2026; }
+    function selM() { return parseInt(document.getElementById('sal-luna').value, 10) || 0; }
+    function sdslKey(y, m) { return WEEKEND_KEY + '-' + y + '-' + (m + 1); }
+    function refreshNorma() {
+      var sel = document.getElementById('norma-select');
+      var y = selY();
+      sel.innerHTML = MONTHS.map(function (name, i) {
+        return '<option value="' + normaFor(y, i) + '">' + name + ' ' + y + ' — ' + normaFor(y, i) + ' ore</option>';
+      }).join('');
+      // Valori egale la luni diferite: alegem opțiunea după indexul lunii, nu după text.
+      sel.selectedIndex = selM();
+    }
+    function manualKey(y, m) { return WEEKEND_KEY + '-manual-' + y + '-' + (m + 1); }
+    function preiaWeekend() {
+      var y = selY(), m = selM();
+      var det = sdslDinCalendarDetails(y, m);
+      document.getElementById('ore-weekend').value = det.total;
+      var nota = document.getElementById('weekend-note');
+      if (nota) nota.innerHTML = '✓ Preluat din calendar: <b>' + det.total + 'h</b> SDSL (' + MONTHS[m] + ' ' + y + ')' +
+        ' · din weekend ' + det.weekend + 'h · din zile libere legale ' + det.legal + 'h · din ture de noapte ' + det.night + 'h.' +
+        (det.nightOutside > 0 ? ' <b>' + det.nightOutside + 'h</b> din ture de noapte în zile de lucru <b>nu</b> sunt SDSL.' : '') +
+        ' Poți edita.';
+      try {
+        localStorage.setItem(sdslKey(y, m), String(det.total));
+        localStorage.setItem(manualKey(y, m), '0');
+      } catch (e) {}
+    }
+    function loadWeekend() {
+      var saved = null, manual = '0';
+      try {
+        saved = localStorage.getItem(sdslKey(selY(), selM()));
+        manual = localStorage.getItem(manualKey(selY(), selM())) || '0';
+      } catch (e) {}
+      // Actualizare automată: recalculăm mereu din calendar cu regula zilei 23:59/00:00.
+      // Numai o valoare editată manual de tine este păstrată.
+      if (manual === '1' && saved !== null) {
+        document.getElementById('ore-weekend').value = saved;
+        var n = document.getElementById('weekend-note');
+        if (n) n.textContent = 'Valoarea editată de tine pentru ' + MONTHS[selM()] + ' ' + selY() + '. Apasă „Preia SDSL” pentru a o recalcula din calendar.';
+      } else {
+        preiaWeekend();
+      }
+    }
+    function onPeriodChange() {
+      refreshNorma();
+      loadWeekend();
+      loadNoapte();
+    }
+    function initPeriod() {
+      var ySel = document.getElementById('sal-an');
+      var mSel = document.getElementById('sal-luna');
+      var cal = activeCalendar();
+      var thisYear = new Date().getFullYear();
+      var y0 = cal ? (cal.year || thisYear) : thisYear;
+      // Gamă largă de ani: 2020–2035, plus anul calendarului dacă e în afară.
+      var years = [];
+      for (var y = 2020; y <= 2035; y++) years.push(y);
+      if (years.indexOf(y0) === -1) years.push(y0);
+      years = years.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+      ySel.innerHTML = years.map(function (v) { return '<option value="' + v + '">' + v + '</option>'; }).join('');
+      mSel.innerHTML = MONTHS.map(function (name, i) { return '<option value="' + i + '">' + name + '</option>'; }).join('');
+      ySel.value = String(y0);
+      mSel.value = String(cal ? (cal.month || 0) : new Date().getMonth());
+      ySel.addEventListener('change', onPeriodChange);
+      mSel.addEventListener('change', onPeriodChange);
+      refreshNorma();
+    }
+
+    function calculeaza() {
+      var brut = parseFloat(document.getElementById('brut').value) || 0;
+      var oreNoapte = parseFloat(document.getElementById('ore-noapte').value) || 0;
+      var oreExtra = parseFloat(document.getElementById('ore-extra').value) || 0;
+      var oreWeekend = parseFloat(document.getElementById('ore-weekend').value) || 0;
+      var norma = parseFloat(document.getElementById('norma-select').value) || 160;
+      var dependenti = parseInt(document.getElementById('dependenti').value) || 0;
+
+      if (brut <= 0) { alert('Introdu salariul brut de bază.'); return; }
+
+      var tarifOrar = brut / norma;
+      var procentNoapte = (parseFloat(document.getElementById('procent-noapte').value) || 25) / 100;
+      var procentExtra = (parseFloat(document.getElementById('procent-extra').value) || 75) / 100;
+      var sporNoapte = round2(oreNoapte * tarifOrar * procentNoapte);
+      var sporExtra = round2(oreExtra * tarifOrar * procentExtra);
+      var procentWeekend = (parseFloat(document.getElementById('procent-weekend').value) || 0) / 100;
+      var sporWeekend = round2(oreWeekend * tarifOrar * procentWeekend);
+
+      var sporuri = readSporuri();
+      var sporCustomTotal = 0;
+      var detalii = [];
+      sporuri.forEach(function (b) {
+        // Procentul se aplică la brut (ca înainte) sau la valoarea orelor, când există ore.
+        var dinProcent = (b.ore > 0)
+          ? b.ore * tarifOrar * (b.pct > 0 ? b.pct / 100 : 1)
+          : brut * (b.pct / 100);
+        var valoare = round2(dinProcent + b.suma);
+        if (valoare === 0) return;
+        sporCustomTotal = round2(sporCustomTotal + valoare);
+        detalii.push({ name: b.name || 'Spor adăugat', valoare: valoare });
+      });
+      saveSporuri();
+      try { localStorage.setItem(sdslKey(selY(), selM()), String(oreWeekend)); } catch (e) {}
+      try { localStorage.setItem(nightKey(selY(), selM()), String(oreNoapte)); } catch (e) {}
+
+      var totalSporuri = round2(sporNoapte + sporExtra + sporWeekend + sporCustomTotal);
+      var brutTotal = round2(brut + totalSporuri);
+
+      var cas = round2(brutTotal * 0.25);
+      var cass = round2(brutTotal * 0.10);
+      var deducere = getDeducere(brut, dependenti);
+      var bazaImpozit = Math.max(0, brutTotal - cas - cass - deducere);
+      var impozit = round2(bazaImpozit * 0.10);
+      var net = round2(brutTotal - cas - cass - impozit);
+
+      document.getElementById('rezultate').style.display = 'block';
+
+      var infoText = 'Tarif orar: ' + tarifOrar.toFixed(2) + ' lei/oră';
+      if (oreNoapte > 0) infoText += ' · Spor noapte: +' + fmt(sporNoapte) + ' lei';
+      if (oreWeekend > 0) infoText += ' · Spor SDSL: +' + fmt(sporWeekend) + ' lei';
+      if (oreExtra > 0) infoText += ' · Spor ore extra: +' + fmt(sporExtra) + ' lei';
+      detalii.forEach(function (d) { infoText += ' · ' + d.name + ': +' + fmt(d.valoare) + ' lei'; });
+      document.getElementById('info-box').textContent = infoText;
+
+      document.getElementById('result-grid').innerHTML =
+        '<div class="result-item highlight"><div class="result-val">' + fmt(net) + ' lei</div><div class="result-lbl">Salariu NET de încasat</div></div>' +
+        '<div class="result-item"><div class="result-val">' + fmt(brutTotal) + ' lei</div><div class="result-lbl">Brut total (cu sporuri)</div></div>' +
+        '<div class="result-item"><div class="result-val">' + fmt(totalSporuri) + ' lei</div><div class="result-lbl">Sporuri adăugate (total)</div></div>' +
+        '<div class="result-item"><div class="result-val">' + fmt(cas) + ' lei</div><div class="result-lbl">CAS — pensie (25%)</div></div>' +
+        '<div class="result-item"><div class="result-val">' + fmt(cass) + ' lei</div><div class="result-lbl">CASS — sănătate (10%)</div></div>' +
+        '<div class="result-item"><div class="result-val">' + fmt(impozit) + ' lei</div><div class="result-lbl">Impozit venit (10%)</div></div>' +
+        '<div class="result-item"><div class="result-val">' + fmt(deducere) + ' lei</div><div class="result-lbl">Deducere personală</div></div>';
+
+      document.getElementById('rezultate').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('add-spor').addEventListener('click', function () { addSpor('', '', '', ''); });
+    document.getElementById('calc-btn').addEventListener('click', calculeaza);
+    document.getElementById('pull-weekend').addEventListener('click', preiaWeekend);
+    document.getElementById('pull-noapte').addEventListener('click', preiaNoapte);
+    document.getElementById('ore-weekend').addEventListener('input', function () {
+      try {
+        localStorage.setItem(sdslKey(selY(), selM()), document.getElementById('ore-weekend').value);
+        localStorage.setItem(manualKey(selY(), selM()), '1');
+      } catch (e) {}
+    });
+    document.getElementById('ore-noapte').addEventListener('input', function () {
+      try { localStorage.setItem(nightKey(selY(), selM()), document.getElementById('ore-noapte').value); } catch (e) {}
+    });
+    // Sincronizare automată cu calendarul: când turele/zilele libere se schimbă în
+    // pagina principală (altă filă), urmăm luna calendarului și preluăm din nou SDSL
+    // cu aceeași regulă 23:59 / 00:00. Valorile editate manual rămân nemișcate.
+    function syncFromCalendar() {
+      var cal = activeCalendar();
+      if (!cal) return;
+      var ys = document.getElementById('sal-an'), ms = document.getElementById('sal-luna');
+      if (ys && cal.year && ys.value !== String(cal.year)) ys.value = String(cal.year);
+      if (ms && ms.value !== String(cal.month || 0)) ms.value = String(cal.month || 0);
+      refreshNorma();
+      loadWeekend();
+      loadNoapte();
+    }
+    window.addEventListener('storage', function (e) {
+      if (!e.key || e.key.indexOf('ore-ture-state-v1') === 0 || e.key.indexOf('ore-ture-holidays-cache') === 0) syncFromCalendar();
+    });
+    loadSporuri();
+    initPeriod();
+    loadWeekend();
+    loadNoapte();
+    if (!document.querySelector('#alte-sporuri .spor-row')) addSpor('', '', '', '');
+  </script>
+</body>
+</html>

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pontaj Ture</title>
+  <meta name="description" content="Pontaj Ture — Calculator gratuit pentru ore de lucru, ture, concedii și zile libere. Calculează norma lunii, orele suplimentare și turele libere." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1D9E75" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- Header -->
+    <div class="app-header">
+      <div>
+        <h1>Pontaj Ture</h1>
+        <div class="subtitle">Ore de lucru, concedii și ture libere</div>
+      </div>
+      <div class="header-actions">
+        <button id="account-btn" class="account-btn" title="Logare și sincronizare în cloud">👤 Cont</button>
+        <button id="import-btn" class="import-btn" title="Importă setări sau calendar">📥 Importă</button>
+        <button id="settings-btn" class="settings-btn" title="Deschide setările" onclick="openSettings()">⚙️ Setări</button>
+        <button id="notify-btn" class="notify-btn" title="Notificări pentru programul de ture" onclick="openNotifyModal()">🔔</button>
+        <button id="theme-toggle" class="theme-btn" title="Schimbă tema" onclick="toggleTheme()">🌙</button>
+      </div>
+    </div>
+
+    <!-- Calendar manager -->
+    <div class="section" data-reveal>
+      <label>Calendar</label>
+      <div class="row">
+        <select id="calendar-select" class="grow"></select>
+        <button class="mini-btn" id="cal-new" title="Creează calendar nou">+ Nou</button>
+        <button class="mini-btn" id="cal-rename" title="Redenumeste calendarul">✎</button>
+        <button class="mini-btn danger" id="cal-delete" title="Șterge calendarul">🗑</button>
+      </div>
+      <p class="hint">Poți crea mai multe calendare (de exemplu pentru locuri de muncă diferite). Fiecare își păstrează propriile ture și setări.</p>
+    </div>
+
+    <!-- Generează programul -->
+    <div class="wizard-bar" role="tablist" aria-label="Pași configurare pontaj">
+      <button type="button" class="wizard-step is-active" data-wizard-step="1">
+        <span class="step-badge">Pasul 1</span>
+        <strong>Ture &amp; program</strong>
+        <small>Alege sau generează modelul de ture</small>
+      </button>
+      <button type="button" class="wizard-step" data-wizard-step="2">
+        <span class="step-badge">Pasul 2</span>
+        <strong>Calendar &amp; aplicare</strong>
+        <small>Marchează zilele și verifică pontajul</small>
+      </button>
+      <button type="button" class="wizard-step" data-wizard-step="3">
+        <span class="step-badge">Pasul 3</span>
+        <strong>Totaluri &amp; salariu</strong>
+        <small>Vezi orele extra, SDSL și calculul salarial</small>
+      </button>
+    </div>
+    <div class="section gen-section">
+      <p class="hint">Alegi categoria din paletă, apoi folosește butonul „Aplică pe zile” de deasupra calendarului. La generare se modifică doar zilele în care lucrezi — zilele dintre ture rămân neatinte, fără niciun marcaj.</p>
+      <div class="menu">
+        <button class="menu-head" data-menu-id="gen" data-menu-body="menu-gen-body" aria-expanded="true"><span class="caret">▾</span> Generator program</button>
+        <div class="menu-body" id="menu-gen-body">
+          <div class="sub-block">
+            <div class="menu">
+              <button class="menu-head" data-menu-id="tip" data-menu-body="menu-tip-body" aria-expanded="true"><span class="caret">▾</span> Tipul de tură</button>
+              <div class="menu-body" id="menu-tip-body">
+                <label class="sub-label">Tipul de tură</label>
+        <select id="tura-type">
+          <optgroup label="Ture de 12 ore">
+            <option value="12/24-12/48">12/24 – 12/48 (zi, noapte, 2 zile libere)</option>
+            <option value="12/24">12/24 (alternativ zi/noapte)</option>
+            <option value="12/24-24/72">12/24 – 24/72 (zi, noapte, 3 zile libere)</option>
+          </optgroup>
+          <optgroup label="Ture de 8 ore">
+            <option value="8/3-dimineata">Schimb fix dimineață (06:00–14:00)</option>
+            <option value="8/3-dupaamiaza">Schimb fix după-amiază (14:00–22:00)</option>
+            <option value="8/3-noapte">Schimb fix noapte (22:00–06:00)</option>
+            <option value="8/3-rotativ">Rotativ 3 schimburi</option>
+          </optgroup>
+          <optgroup label="Ture de 24 ore">
+            <option value="24/48">24/48 (o zi lucrezi, două libere)</option>
+            <option value="24/72">24/72 (o zi lucrezi, trei libere)</option>
+          </optgroup>
+          <optgroup label="Personalizat">
+            <option value="custom">⚙️ Tură personalizată (bifezi tu zilele)</option>
+          </optgroup>
+        </select>
+        <div id="custom-panel" class="custom-panel" style="display:none">
+          <label>Câte ore are tura ta?</label>
+          <div class="row">
+            <input type="number" id="custom-ore-input" class="ore-input" value="14" min="1" max="24" step="1" />
+            <span class="hint inline">ore / zi lucrătoare</span>
+          </div>
+          <div class="row wrap-row" style="margin-top:8px">
+            <label>Ore de zi (pentru tura ta) <input type="number" id="custom-zi-hours" class="ore-input small" value="14" min="1" max="24" step="0.5" /></label>
+            <label>Ore de noapte (pentru tura ta) <input type="number" id="custom-noapte-hours" class="ore-input small" value="13" min="1" max="24" step="0.5" /></label>
+          </div>
+
+          <div class="pt-maker">
+            <label class="sub-label" style="margin-top:12px">Creează un tip de tură nou</label>
+            <div class="row wrap-row">
+              <input type="text" id="pt-name" class="grow" placeholder="Denumire (ex. Tura mea 4/2)" maxlength="30" />
+            </div>
+            <div class="row wrap-row" style="margin-top:8px">
+              <input type="text" id="pt-seq" class="grow" placeholder="Secvență: Z N L L" maxlength="80" />
+            </div>
+            <p class="hint">Scrie codurile separate prin spațiu: <b>Z</b> zi, <b>N</b> noapte, <b>L</b> liber, <b>R</b> recuperare, <b>P</b> pregătire, <b>Cont.</b> continuitate, <b>Psih</b> psihologic. Modelul se repetă pe zile.</p>
+            <div class="row" style="margin-top:8px">
+              <button class="mini-btn" id="pt-generate">⚙ Generează tip de tură</button>
+            </div>
+            <p class="hint" id="pt-status"></p>
+          </div>
+        </div>
+
+        <p class="hint">Alege o categorie din paletă, apoi folosește butonul „Aplică pe zile” de deasupra calendarului. La generare se modifică doar zilele în care lucrezi — zilele dintre ture rămân neatinse, fără niciun marcaj.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sub-block">
+              <div class="menu">
+                <button class="menu-head" data-menu-id="per" data-menu-body="menu-per-body" aria-expanded="true"><span class="caret">▾</span> Perioada de generare</button>
+                <div class="menu-body" id="menu-per-body">
+                  <label class="sub-label">Perioada de generare</label>
+        <div class="row wrap-row">
+          <select id="gen-scope" class="grow">
+            <option value="month">Luna afișată</option>
+            <option value="year">Tot anul</option>
+            <option value="range">De la ziua X la ziua Y</option>
+          </select>
+        </div>
+        <div id="gen-range-row" style="display:none; margin-top:8px">
+          <div class="date-range-line">
+            <span class="dr-label">Începe cu</span>
+            <label>ziua <input type="number" id="gen-from-d" class="ore-input small" value="1" min="1" max="31" /></label>
+            <label>luna <select id="gen-from-m" class="month-select"></select></label>
+            <label>anul <input type="number" id="gen-from-y" class="year-input" value="2026" min="2000" max="2100" /></label>
+          </div>
+          <div class="date-range-line">
+            <span class="dr-label">Până la</span>
+            <label>ziua <input type="number" id="gen-to-d" class="ore-input small" value="31" min="1" max="31" /></label>
+            <label>luna <select id="gen-to-m" class="month-select"></select></label>
+            <label>anul <input type="number" id="gen-to-y" class="year-input" value="2026" min="2000" max="2100" /></label>
+          </div>
+        </div>
+        <div class="row wrap-row" style="margin-top:8px">
+          <label>Începe turele de la ziua <input type="number" id="gen-start" class="ore-input small" value="1" min="1" max="31" /></label>
+          <span class="hint inline">modelul pornește de aici, nu de la 1</span>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="mini-btn gen-btn" id="gen-pattern">Generează programul</button>
+        </div>
+        <p class="hint">Zilele libere (L) rămân goale în calendar — nu apare litera „X”, nicio culoare sau etichetă de sărbătoare. Se văd doar orele pontate efectiv în acea zi (de exemplu 9h trecute de o tură de noapte), exact ca în exemplul verde.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sub-block">
+              <div class="menu">
+                <button class="menu-head" data-menu-id="cat" data-menu-body="menu-cat-body" aria-expanded="true"><span class="caret">▾</span> Categorii de ture</button>
+                <div class="menu-body" id="menu-cat-body">
+                  <label class="sub-label">Categorii de ture <span class="tag">apasă o tură ca s-o alegi · ✎ ca s-o editezi</span></label>
+        <p class="hint">Toate categoriile sunt aici — inclusiv <b>Concedii</b> (CO, CM) și <b>COS</b>. Apasă o tură ca s-o alegi, apoi „Aplică pe zile”.</p>
+        <div id="shift-palette" class="palette"></div>
+
+        <div class="row" style="margin-top:8px">
+          <button class="co-cm-btn clear-btn" id="btn-clear-all">🗑 Șterge tot</button>
+        </div>
+
+        <p class="hint">Gestionezi categoriile, culorile și tipurile de tură în butonul „⚙️ Setări” de sus.</p>
+
+        <button class="mini-btn retract-btn" id="btn-new-shift" aria-expanded="false">▶ + Tura nouă</button>
+
+        <div id="shift-form" class="editor" style="display:none">
+          <div class="editor-title" id="form-title">Tura nouă</div>
+          <div class="row wrap-row">
+            <input type="text" id="f-name" class="grow" placeholder="Denumire (ex. Inter 11:00–19:00)" maxlength="30" />
+            <select id="f-category" class="grow" title="Categoria turei"></select>
+          </div>
+          <div class="row wrap-row" style="margin-top:8px">
+            <label>Culoarea turei <input type="color" id="f-color" class="color-input" value="#E6F1FB" title="Alege culoarea turei" /></label>
+            <label class="chk"><input type="checkbox" id="f-use-color" /> Folosește această culoare</label>
+            <span class="hint inline">Altfel se folosește culoarea categoriei.</span>
+          </div>
+          <div class="row wrap-row" style="margin-top:8px">
+            <input type="text" id="f-code" class="code-input" placeholder="Cod" maxlength="6" />
+            <label>Ore pontate <input type="number" id="f-hours" class="ore-input small" placeholder="Ore" min="0" max="24" step="0.5" /></label>
+            <label>Pauză (min) <input type="number" id="f-break" class="ore-input small" value="0" min="0" max="600" step="5" /></label>
+          </div>
+          <div class="row wrap-row" style="margin-top:8px">
+            <label>Început <input type="time" id="f-start" class="code-input" /></label>
+            <label>Sfârșit <input type="time" id="f-end" class="code-input" /></label>
+            <label>Început 2 <input type="time" id="f-start2" class="code-input" /></label>
+            <label>Sfârșit 2 <input type="time" id="f-end2" class="code-input" /></label>
+          </div>
+          <p class="hint">Dacă treci orele de pontare (început/sfârșit), orele se calculează automat cu formula aplicației originale: trecerea peste miezul nopții adaugă 24h, minutele împrumută o oră, tura despărțită se adună, iar pauza se scade. Altfel folosește câmpul „Ore pontate”.</p>
+          <p class="hint" id="f-hint"></p>
+          <div class="row wrap-row" style="margin-top:10px">
+            <button class="mini-btn" id="f-save">Salvează tura</button>
+            <button class="mini-btn danger" id="f-delete" style="display:none">Șterge</button>
+            <button class="mini-btn ghost" id="f-cancel">Anulează</button>
+          </div>
+          <div class="row wrap-row" id="f-apk-row" style="margin-top:10px">
+            <select id="apk-shift-select" class="grow" title="Turele reale din aplicația originală"></select>
+            <button class="mini-btn ghost" id="add-apk-shift">+ Din original</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+    </div>
+
+    <!-- Calendar grid -->
+    <div class="section cal-card" data-reveal>
+      <!-- Butonul Aplică a fost mutat aici, deasupra Vizualizare calendar -->
+      <div class="apply-bar">
+        <button class="co-cm-btn apply-tura-btn" id="btn-apply">📅 Aplică pe zile</button>
+        <p class="hint" id="paint-hint">Modul rămâne activ până apeși din nou butonul. Apasă o zi ca s-o adaugi, încă o dată ca s-o ștergi.</p>
+      </div>
+      <div class="row" style="justify-content:space-between; margin-bottom:8px">
+        <span class="sub-label" style="margin:0">Vizualizare calendar</span>
+        <div class="row" style="gap:6px">
+          <div class="view-toggle">
+            <button class="view-btn active" id="view-month">Lună</button>
+            <button class="view-btn" id="view-year">Tot anul</button>
+          </div>
+          <button class="mini-btn" id="btn-refresh-year" title="Reîncarcă previzualizarea">🔄</button>
+        </div>
+      </div>
+      <div class="cal-header">
+        <button id="prev-month" aria-label="Înapoi">&#8592;</button>
+        <span id="month-label"></span>
+        <button id="next-month" aria-label="Înainte">&#8594;</button>
+      </div>
+      <div class="cal-grid" id="cal"></div>
+      <div class="year-grid" id="cal-year" style="display:none"></div>
+      <p class="hint" id="year-hint" style="display:none">Apasă o zi într-o lună ca să o deschizi și să o editezi. Culorile arată tura principală a zilei.</p>
+      <div class="section">
+        <div class="menu">
+          <button class="menu-head" data-menu-id="legenda" data-menu-body="menu-legenda-body" aria-expanded="true"><span class="caret">▾</span> Legenda</button>
+          <div class="menu-body" id="menu-legenda-body"><div class="legend-rows" id="legend"></div></div>
+        </div>
+      </div>
+
+      <div id="day-editor" class="editor day-editor" style="display:none"></div>
+    </div>
+
+    <!-- Zile libere și vacanțe — pe pagina principală, sub calendar -->
+    <div class="section holidays-main">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="holidays" data-menu-body="menu-holidays-body" aria-expanded="true"><span class="caret">▾</span> Zile libere și vacanțe</button>
+        <div class="menu-body" id="menu-holidays-body">
+          <div class="row" style="justify-content:space-between; align-items:center">
+            <label style="margin:0; font-weight:600">Zile libere și vacanțe</label>
+            <button class="mini-btn" id="btn-update-holidays-main">↻ Actualizare</button>
+          </div>
+          <p class="hint" id="holiday-status-main">Sursă: zilelibere.com și Codul Muncii. Apasă „Actualizare” pentru a reîncărca zilele libere și vacanțele.</p>
+          <div class="filters" id="holiday-filters-main"></div>
+          <p class="hint">Bifează categoriile pe care vrei să le vezi în calendar. Le găsești și în „⚙️ Setări” → „Zile libere”.</p>
+          <p class="hint">Doar categoria <b>Zile libere legale</b> (Codul Muncii, art. 139) primește eticheta <b>ZL</b> în calendar. Ultima zi de curs, prima zi de vacanță, punțile și sărbătorile religioase au etichetele lor (VAC / P / SĂR), dar nu sunt zile libere legale.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistici (strict pe luna selectată în calendar, fără report din luna precedentă) -->
+  <div class="stats stats-4">
+    <div class="stat"><div class="stat-val" id="ore-lucrate">—</div><div class="stat-lbl">ore pontate luna asta</div></div>
+    <div class="stat"><div class="stat-val" id="norma">—</div><div class="stat-lbl">norma lunii (ore)</div></div>
+    <div class="stat"><div class="stat-val" id="ore-extra">—</div><div class="stat-lbl">ore extra / minus</div></div>
+    <div class="stat stat-sdsl"><div class="stat-val" id="sdsl-stat">—</div><div class="stat-lbl">ore SDSL luna asta</div></div>
+  </div>
+  <p class="hint" id="cal-stats-note" style="margin-top:-6px">Afișează doar modificările din luna selectată în calendar (fără report sau recuperare din luna precedentă).</p>
+
+    <!-- Calcul SDSL — mereu vizibil, cu regula zilei 23:59 / 00:00 -->
+    <div class="section sdsl-section" id="sdsl-section">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="sdsl" data-menu-body="menu-sdsl-body" aria-expanded="true"><span class="caret">▾</span> Calcul SDSL · orele lucrate în zile libere legale</button>
+        <div class="menu-body" id="menu-sdsl-body">
+          <div class="row" style="justify-content:space-between; align-items:center">
+            <label style="margin:0">Calcul SDSL · orele lucrate în zile libere legale</label>
+        <span class="sdsl-sync" id="sdsl-sync">✓ sincronizat automat</span>
+        <span class="tag" id="sdsl-total-tag">—</span>
+      </div>
+      <p class="hint">Cifrele de mai jos se recalculează automat din calendar la fiecare schimbare (ture, ore, zile libere legale) — nu trebuie apăsat nimic.</p>
+      <p class="hint">Se ține cont de orele fiecărei ture și de orele lucrate în SDSL (sâmbătă, duminică și zile libere legale). <b>O zi se termină la 23:59; de la 00:00 începe o altă zi.</b> Turele care trec de miezul nopții se împart: orele până la 23:59 rămân în ziua de start, iar cele de după 00:00 trec în ziua următoare. <b>Ce ore sunt lucrate în afara SDSL nu se iau în considerare ca fiind SDSL.</b></p>
+      <div class="stats stats-4 sdsl-stats">
+        <div class="stat"><div class="stat-val" id="sdsl-total">—</div><div class="stat-lbl">total ore SDSL</div></div>
+        <div class="stat"><div class="stat-val" id="sdsl-weekend">—</div><div class="stat-lbl">din weekend</div></div>
+        <div class="stat"><div class="stat-val" id="sdsl-legal">—</div><div class="stat-lbl">din zile libere legale</div></div>
+        <div class="stat"><div class="stat-val" id="sdsl-night">—</div><div class="stat-lbl">din ture de noapte (în SDSL)</div></div>
+      </div>
+      <p class="hint" id="sdsl-principle"></p>
+      <div class="sdsl-breakdown" id="sdsl-breakdown"></div>
+      <div class="sdsl-free">
+        <button type="button" class="sdsl-free-toggle" id="sdsl-free-toggle" aria-expanded="true" aria-controls="sdsl-free-content"><span class="caret">▾</span> Câte ture libere ies din orele SDSL</button>
+        <div id="sdsl-free-content">
+          <div id="sdsl-free-text" class="sdsl-free-text">—</div>
+          <div id="sdsl-variants" class="sdsl-variants"></div>
+          <label class="chk sdsl-include"><input type="checkbox" id="sdsl-include" /> Adaugă orele SDSL la „orele plus” din calculul de mai jos</label>
+          <p class="hint">Când bifezi, orele SDSL intră în totalul din „Câte ture libere ies pe luna curentă”. Lasă debifat dacă vrei să vezi separat doar orele suplimentare față de normă.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Salariu pe ture -->
+    <div class="section salariu-section">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="salariu" data-menu-body="menu-salariu-body" aria-expanded="true"><span class="caret">▾</span> Salariu pe ture</button>
+        <div class="menu-body" id="menu-salariu-body">
+          <div class="stat salariu-total" id="sal-total-box">
+        <div class="stat-lbl">Salariu pe ture (luna afișată)</div>
+        <div class="stat-val"><span id="sal-total">—</span> <small>lei</small></div>
+      </div>
+      <div class="stat salariu-total salariu-missing" id="sal-total-missing" style="display:none">
+        <div class="stat-lbl">Setează plata pe tură ca să vezi salariul</div>
+        <button class="co-cm-btn" id="btn-sal-open">Setări plată</button>
+      </div>
+      <div class="salariu-toggles">
+        <button class="co-cm-btn" id="btn-sal-detalii">Detalii ▶</button>
+        <button class="co-cm-btn" id="btn-sal-setari">Setări plată ▶</button>
+      </div>
+      <div id="sal-panel-detalii" class="stats salariu-stats" style="display:none">
+        <div class="stat"><div class="stat-val" id="sal-ture-lucrate">—</div><div class="stat-lbl">ture lucrate</div></div>
+        <div class="stat"><div class="stat-val" id="sal-zile-lucrate">—</div><div class="stat-lbl">zile lucrate</div></div>
+        <div class="stat"><div class="stat-val" id="sal-ore-pontate">—</div><div class="stat-lbl">ore pontate</div></div>
+        <div class="stat"><div class="stat-val" id="sal-norma">—</div><div class="stat-lbl">norma lunii</div></div>
+        <div class="stat"><div class="stat-val" id="sal-ore-supl">—</div><div class="stat-lbl">ore suplimentare</div></div>
+        <div class="stat"><div class="stat-val" id="sal-sdsl">—</div><div class="stat-lbl">SDSL · weekend + zile libere legale</div></div>
+        <div class="stat"><div class="stat-val" id="sal-ture-normale">—</div><div class="stat-lbl">ture normale</div></div>
+        <div class="stat"><div class="stat-val" id="sal-duble">—</div><div class="stat-lbl">duble</div></div>
+        <div class="stat"><div class="stat-val" id="sal-concedii">—</div><div class="stat-lbl">zile concediu</div></div>
+        <p class="hint" id="sal-rezumat-text" style="grid-column:1 / -1; margin:6px 0 0"></p>
+        <p class="hint" style="grid-column:1 / -1; margin:2px 0 0">Regulă: când se suprapun ture în aceeași zi, orele <b>nu se adună</b> — se iau orele turei adăugate ultima (ex. Z + CO = 8h). Dacă editezi orele zilei, aceea valoare are prioritate. Toate cifrele de aici se actualizează automat când modifici calendarul.</p>
+      </div>
+      <div id="sal-panel-setari" class="salariu-settings" style="display:none">
+        <div class="custom-ore-row">
+          <input type="number" id="pay-per-shift" class="ore-input salariu-input" placeholder="ex: 200" min="0" step="10" />
+          <span class="custom-ore-label">lei / tură normală</span>
+        </div>
+        <div class="custom-ore-row">
+          <input type="number" id="double-multiplier" class="ore-input salariu-input" value="2" min="0.1" step="0.1" />
+          <span class="custom-ore-label">multiplicator dublă (2 = 200%)</span>
+        </div>
+        <div class="game-settings">
+          <label class="chk game-settings-toggle"><input type="checkbox" id="game-invites-toggle" checked /> Invitații la mini-joc</label>
+          <button class="co-cm-btn" id="btn-game-play">🎯 Joacă acum</button>
+        </div>
+        <p class="hint">Plata pe tură se salvează pentru fiecare calendar. O „dublă” e o zi în care lucrezi mai multe ore decât o tură normală.</p>
+      </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Export calendar (.ics) -->
+    <div class="section ics-section">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="ics" data-menu-body="menu-ics-body" aria-expanded="true"><span class="caret">▾</span> Exportă în calendar</button>
+        <div class="menu-body" id="menu-ics-body">
+          <button class="co-cm-btn" id="btn-ics-toggle">📅 Exportă în calendar ▶</button>
+      <div id="ics-panel" class="ics-panel" style="display:none">
+        <div class="ics-row"><label for="ics-range">Perioada</label>
+          <select id="ics-range" class="color-select">
+            <option value="1">Luna afișată</option>
+            <option value="3">Următoarele 3 luni</option>
+          </select>
+        </div>
+        <div class="ics-row"><label for="ics-day-start">Ora start tură de zi</label><input type="time" id="ics-day-start" value="07:00" /></div>
+        <div class="ics-row"><label for="ics-night-start">Ora start tură de noapte</label><input type="time" id="ics-night-start" value="19:00" /></div>
+        <div class="ics-row"><label for="ics-alarm-day">Alarmă înainte de tura de zi</label><input type="time" id="ics-alarm-day" value="05:30" /></div>
+        <div class="ics-row"><label for="ics-alarm-night">Alarmă înainte de tura de noapte</label><input type="time" id="ics-alarm-night" value="17:30" /></div>
+        <label class="chk ics-check"><input type="checkbox" id="ics-alarm2" /> Alarmă secundară</label>
+        <div class="custom-ore-row" id="ics-alarm2-row" style="display:none">
+          <input type="number" id="ics-alarm2-min" class="ore-input" value="30" min="1" max="1440" step="5" />
+          <span class="custom-ore-label">minute înainte de prima alarmă</span>
+        </div>
+        <label class="chk ics-check"><input type="checkbox" id="ics-include-leave" /> Include CO/CM (toată ziua, fără alarmă)</label>
+        <button class="co-cm-btn" id="btn-ics-export">📅 Exportă în calendar</button>
+        <p class="hint" id="ics-status">Descarcă un fișier .ics și importă-l în Google Calendar, Apple Calendar sau Outlook.</p>
+      </div>
+      </div>
+    </div>
+
+    <!-- Ore suplimentare pentru luna viitoare (editabil + revenire la calculul automat) -->
+    <div class="section next-box">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="nextbox" data-menu-body="menu-nextbox-body" aria-expanded="true"><span class="caret">▾</span> Ore suplimentare pentru luna viitoare</button>
+        <div class="menu-body" id="menu-nextbox-body">
+          <label>Ore suplimentare pentru luna viitoare <span class="tag" id="carry-mode">↻ actualizat automat</span></label>
+      <div class="row">
+        <input type="number" id="extra-next" class="ore-input" value="0" step="1" />
+        <span class="hint inline">(+ ore extra / − ore minus)</span>
+        <button class="mini-btn ghost" id="carry-reset" title="Revine la calculul automat">↻ Auto</button>
+      </div>
+      <p class="hint">Se completează automat cu orele care rămân după alegerea turelor libere. Poți modifica valoarea liber (+ sau −): luna următoare va porni chiar de aici. Butonul „↻ Auto” șterge editarea și revine la calculul automat. Orele rămase din luna anterioară apar în socoteala de mai jos.</p>
+      </div>
+    </div>
+    </div>
+
+    <!-- Calcul ture libere -->
+    <div class="section calc-section">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="calc" data-menu-body="menu-calc-body" aria-expanded="true"><span class="caret">▾</span> Câte ture libere ies pe luna curentă</button>
+        <div class="menu-body" id="menu-calc-body">
+          <label>Câte ture libere ies pe luna curentă</label>
+          <div id="calc-summary" class="calc-summary"></div>
+          <div id="calc-possibilities" class="possibilities"></div>
+          <div id="calc-legend" class="calc-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Butoanele de acțiune: Print, Export PDF și Trimite unui coleg (împachetate, cu spații) -->
+    <div class="action-bar">
+      <button class="action-btn" onclick="doPrint()" title="Printează calendarul">🖨️ Print</button>
+      <button class="action-btn" onclick="exportPdf()" title="Exportă în PDF">📄 Export PDF</button>
+      <button class="action-btn share-btn" onclick="openShareModal()" title="Trimite unui coleg">📤 Trimite unui coleg</button>
+    </div>
+
+    <!-- Secțiunea „Ce legi se aplică pentru orele suplimentare?” — imediat DUPĂ butoarele de export
+         (înaintea secțiunii „Articole utile” și a secțiunii „Despre calculator”). -->
+    <div class="section">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="overtime" data-menu-body="menu-overtime-body" aria-expanded="true"><span class="caret">▾</span> Ce legi se aplică pentru orele suplimentare?</button>
+        <div class="menu-body" id="menu-overtime-body"><div id="overtime-laws-section"></div></div>
+      </div>
+    </div>
+
+    <!-- Secțiunea „Articole utile” — lista articolelor ghiduitorilor; „Ture de Lucru” se deschide în aplicație. -->
+    <div class="section">
+      <div class="menu">
+        <button class="menu-head" data-menu-id="articole" data-menu-body="menu-articole-body" aria-expanded="true"><span class="caret">▾</span> Articole utile</button>
+        <div class="menu-body" id="menu-articole-body">
+          <div id="articole-utils-list" class="ol-articles"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:1rem" data-reveal>
+      <a class="co-cm-btn" href="calculator-salariu.html" style="display:block;text-align:center;text-decoration:none">💰 Calculează salariul net (cu sporuri)</a>
+    </div>
+    <div class="share-actions" data-reveal>
+      <div class="install-row">
+        <button class="pwa-btn" onclick="openPwaModal()">📱 Descarcă APK / instalează pe telefon</button>
+        <a class="pwa-btn iphone-install-btn" href="iphone.html" title="Varianta pentru iPhone / iPad">🍎 iPhone</a>
+      </div>
+    </div>
+
+    <!-- Informatii -->
+    <div class="info-block" data-reveal>
+      <div class="menu">
+        <button class="menu-head" data-menu-id="despre" data-menu-body="menu-despre-body" aria-expanded="true"><span class="caret">▾</span> Despre aplicatie</button>
+        <div class="menu-body" id="menu-despre-body">
+          <p><strong>Pontaj Ture</strong> este un instrument gratuit pentru lucrătorii în schimburi. Te ajută să urmărești turele, să raportezi orele lucrate la norma fiecărei luni și să vezi zilele de weekend, zilele libere legale și sărbătorile din România.</p>
+<p>Evidența concediilor (CO, CM, COS) și modul în care se raportează orele peste normă depind de setările alese în aplicație, de regulamentul intern / contractul colectiv și de legislația aplicabilă domeniului tău.</p>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-head" data-menu-id="tipuri" data-menu-body="menu-tipuri-body" aria-expanded="true"><span class="caret">▾</span> Tipuri de ture suportate</button>
+        <div class="menu-body" id="menu-tipuri-body">
+          <h2>Tipuri de ture suportate</h2>
+          <p>Aplicația suportă tiparele de lucru cele mai răspândite: 12/24 (zi și noapte alternative), 12/24–12/48, 12/24–24/72, 12/48, 24/48 și 24/72 pentru ture lungi, și cele trei schimburi de 8 ore — 06:00–14:00, 14:00–22:00 și 22:00–06:00, inclusiv rotativ. Turele atomice: Zi (07:00–21:00), Noapte (20:00–09:00), Liber, Recuperare, Pregătire, Continuitate, Psihologic (categoria Ture și varianta TureZ); Sărbătoare (categoria Sărbători). La pixeli intruși se suportă și modul personalizat — bifezi zilele din calendar.</p>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-head" data-menu-id="cum" data-menu-body="menu-cum-body" aria-expanded="true"><span class="caret">▾</span> Cum funcționează?</button>
+        <div class="menu-body" id="menu-cum-body">
+          <h2>Cum funcționează?</h2>
+          <p>Selectezi tipul de tură, apeși pe o zi de start din calendar și programul se generează automat pentru orice lună. Poți marca zilele de concediu medical (CM) sau concediu de odihnă (CO) — fiecare calculat cu 8 ore conform Codului Muncii. Calculatorul folosește normele oficiale de ore ale fiecărei luni din 2025 și 2026.</p>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-head" data-menu-id="telefon" data-menu-body="menu-telefon-body" aria-expanded="true"><span class="caret">▾</span> Funcționează pe telefon?</button>
+        <div class="menu-body" id="menu-telefon-body">
+          <h2>Funcționează pe telefon?</h2>
+          <p>Da — Pontaj Ture funcționează în browser și poate fi instalat ca aplicație pe Android și iOS (PWA sau APK), fără App Store.</p>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-head" data-menu-id="datele" data-menu-body="menu-datele-body" aria-expanded="true"><span class="caret">▾</span> Se păstrează datele?</button>
+        <div class="menu-body" id="menu-datele-body">
+          <h2>Se păstrează datele?</h2>
+          <p>Da — totul se salvează în browser, pe acest dispozitiv, iar cu butonul „👤 Cont” poți sincroniza calendarele și setările între dispozitive. Butoanele „📥 Importă” / „📤 Exportă” permit și transferul manual prin fișier. Poți folosi mai multe calendare în același timp.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== Notificări pentru programul de ture ===== -->
+  <div id="notify-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeNotifyModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🔔 Notificări pentru programul de ture</h2>
+        <button class="modal-close" title="Închide" onclick="closeNotifyModal()">✕</button>
+      </div>
+      <p class="hint">Primești o notificare înainte de fiecare tură din calendar. Setările se salvează pentru fiecare calendar în parte și funcționează și când adaugi aplicația pe ecranul de start.</p>
+
+      <div class="notify-status" id="notify-status">Verific permisiunea de notificare…</div>
+
+      <label class="chk notify-toggle"><input type="checkbox" id="notify-enabled" /> Activează notificările pentru ture</label>
+
+      <label class="sub-label" style="margin-top:12px">Cu cât timp înainte de tură</label>
+      <div class="row wrap-row">
+        <input type="number" id="notify-lead" class="ore-input" value="120" min="5" max="1440" step="15" />
+        <span class="hint inline">minute înainte de începutul turei (ex. 120 = 2 ore)</span>
+      </div>
+
+      <label class="sub-label" style="margin-top:12px">Câte zile înainte verific</label>
+      <div class="row wrap-row">
+        <input type="number" id="notify-days" class="ore-input" value="3" min="1" max="14" step="1" />
+        <span class="hint inline">zile (1–14)</span>
+      </div>
+
+      <label class="sub-label" style="margin-top:12px">Ce ture anunță</label>
+      <div class="notify-types" id="notify-types"></div>
+      <p class="hint">Dacă nu bifezi nicio tură, se anunță toate turele cu ore pontate (zi, noapte, pregătire, continuitate etc.).</p>
+
+      <label class="chk" style="margin-top:10px"><input type="checkbox" id="notify-sound" checked /> Sunet la notificare</label>
+      <label class="chk"><input type="checkbox" id="notify-today" checked /> Arată și un rezumat al turei de azi la deschidere</label>
+
+      <div class="row wrap-row" style="margin-top:12px">
+        <button class="mini-btn" id="notify-allow">🔓 Permite notificările</button>
+        <button class="mini-btn" id="notify-test">🧪 Notificare de test</button>
+      </div>
+
+      <label class="sub-label" style="margin-top:14px">Următoarele ture din calendar</label>
+      <div class="notify-upcoming" id="notify-upcoming">—</div>
+
+      <p class="hint" style="margin-top:12px"><b>iPhone / iPad:</b> notificările funcționează după ce adaugi aplicația pe ecranul de start cu Safari (iOS 16.4+) și permiți notificările. Vezi pagina <a href="iphone.html">📱 iPhone</a> pentru pași.</p>
+    </div>
+  </div>
+
+  <!-- ===== Panoul de setări ===== -->
+  <div id="settings-modal" class="modal-overlay" style="display:none">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Setări</h2>
+        <button id="settings-close" class="modal-close" title="Închide" onclick="closeSettings()">✕</button>
+      </div>
+      <p class="hint" style="margin:0 0 8px">Toate setările sunt grupate aici ca să nu încarce ecranul principal. Se salvează automat pe acest dispozitiv.</p>
+
+      <div class="settings-tabs">
+        <button class="set-tab active" data-tab="general">Generale</button>
+        <button class="set-tab" data-tab="tipuri">Tipuri de tură</button>
+        <button class="set-tab" data-tab="categorii">Categorii și culori</button>
+        <button class="set-tab" data-tab="zile">Zile libere</button>
+        <button class="set-tab" data-tab="calcul">Calcul</button>
+        <button class="set-tab" data-tab="original">Din original</button>
+      </div>
+
+      <div class="settings-body">
+        <!-- Generale -->
+        <div class="set-pane" data-pane="general">
+          <label class="sub-label">Aspect</label>
+          <div class="row wrap-row">
+            <button class="mini-btn" id="set-theme-light">☀️ Luminos</button>
+            <button class="mini-btn" id="set-theme-dark">🌙 Întunecat</button>
+          </div>
+          <p class="hint">Aceeași temă poate fi schimbată și din butonul de lângă titlu.</p>
+
+          <label class="sub-label" style="margin-top:14px">Generare program</label>
+          <label class="chk"><input type="checkbox" id="keep-existing" checked /> Păstrează turele deja marcate când generez din nou modelul</label>
+          <p class="hint">Dacă o debifezi, la generare zilele respective se resetează la modelul ales.</p>
+
+          <label class="sub-label" style="margin-top:14px">Altele</label>
+          <div class="row wrap-row">
+            <label>Simbol monedă <input type="text" id="set-currency" class="code-input" value="€" maxlength="4" /></label>
+          </div>
+          <p class="hint">Valoarea din aplicația originală (tipoMoneda) este €.</p>
+        </div>
+
+        <!-- Tipuri de tură -->
+        <div class="set-pane" data-pane="tipuri" style="display:none">
+          <p class="hint">Aici creezi, editezi și ștergi tipurile de tură (modelele de Z / N / L / R / P… care se repetă pe zile). Le poți genera și direct din „⚙️ Tură personalizată”.</p>
+          <div id="pattern-list" class="pattern-list"></div>
+          <div class="row" style="margin-top:10px">
+            <button class="mini-btn" id="pt-add">+ Tip de tură nou</button>
+          </div>
+          <p class="hint">Tipurile din aplicația originală nu se pot șterge, dar le poți duplica (⧉) și apoi modifica duplicatul.</p>
+        </div>
+
+        <!-- Categorii și culori -->
+        <div class="set-pane" data-pane="categorii" style="display:none">
+          <p class="hint">Categoriile grupează turele și le dau culoarea din calendar. Le poți adăuga, redenumi, recolora sau șterge.</p>
+          <div id="cat-list" class="cat-list"></div>
+          <div class="row wrap-row" style="margin-top:10px">
+            <input type="text" id="cat-new-name" class="grow" placeholder="Denumire categorie nouă" maxlength="30" />
+            <select id="cat-new-color" class="color-select" title="Culoare"></select>
+            <button class="mini-btn" id="cat-add">+ Adaugă</button>
+          </div>
+        </div>
+
+        <!-- Zile libere -->
+        <div class="set-pane" data-pane="zile" style="display:none">
+          <div class="row" style="justify-content:space-between; align-items:center">
+            <label class="sub-label" style="margin:0">Zile libere și vacanțe</label>
+            <button class="mini-btn" id="btn-update-holidays">↻ Actualizează</button>
+          </div>
+          <p class="hint" id="holiday-status">Sursă: zilelibere.com și Codul Muncii. Apasă „Actualizează” pentru a reîncărca zilele libere și vacanțele.</p>
+          <label class="sub-label" style="margin-top:10px">Arată în calendar</label>
+          <div class="filters" id="holiday-filters"></div>
+        </div>
+
+        <!-- Calcul -->
+        <div class="set-pane" data-pane="calcul" style="display:none">
+          <label class="sub-label">Ore pe tură (pentru calculul turelor libere)</label>
+          <div class="row wrap-row">
+            <div class="field"><span>Ore / tură zi</span><input type="number" id="day-hours" class="ore-input" value="14" min="1" max="24" step="0.5" /></div>
+            <div class="field"><span>Ore / tură noapte</span><input type="number" id="night-hours" class="ore-input" value="13" min="1" max="24" step="0.5" /></div>
+          </div>
+          <label class="sub-label" style="margin-top:14px">Ore suplimentare</label>
+          <p class="hint">Orele rămase din luna trecută se preiau automat din luna anterioară, iar ce lași în „Ore suplimentare pentru luna viitoare” devine automat „rămase” în luna următoare. Nu există o valoare salvată separat pentru fiecare lună care să nu se sincronizeze. O poți edita oricând în căsuța de pe pagină; „↻ Auto” revine la calcul.</p>
+        </div>
+
+        <!-- Setări pentru Pontaj Ture (app de ture) -->
+        <div class="set-pane" data-pane="original" style="display:none">
+          <p class="hint">Setări din aplicația originală (Idioma, TipoHoras, SimboloMoneda, IngresoHoraExtra, NotasColorFondo / Transparencia / Texto, textSize, calcularTiempoTurnoManual, tiempoDescanso). Se salvează separat pentru fiecare calendar.</p>
+
+          <label class="sub-label">Limbă și afișare</label>
+          <div class="row wrap-row">
+            <label>Limbă <select id="set-language" class="color-select">
+              <option value="ro">Română</option><option value="en">English</option><option value="es">Español</option>
+            </select></label>
+            <label>Mod afișare ore <select id="set-tipo-horas" class="color-select">
+              <option value="0">Întregi (14)</option><option value="1">Cu zecimale (14.00)</option>
+            </select></label>
+          </div>
+
+          <label class="sub-label" style="margin-top:14px">Venituri suplimentare</label>
+          <div class="row wrap-row">
+            <div class="field"><span>Pe oră în plus</span><input type="number" id="set-income" class="ore-input" value="0" step="0.5" min="0" /></div>
+          </div>
+          <p class="hint">Simbolul monedei se setează în fila „Generale”. Cu valoare mai mare de 0, în calcul apare venitul estimat al orelor suplimentare.</p>
+
+          <label class="sub-label" style="margin-top:14px">Ture</label>
+          <div class="row wrap-row">
+            <div class="field"><span>Dimensiune text ture (px)</span><input type="number" id="set-badge-font" class="ore-input" value="10" min="8" max="18" step="1" /></div>
+            <div class="field"><span>Pauză implicită (min)</span><input type="number" id="set-default-break" class="ore-input" value="0" min="0" max="600" step="5" /></div>
+          </div>
+          <label class="chk" style="margin-top:8px"><input type="checkbox" id="set-auto-calc" checked /> Calculează automat durata turei din orele de pontare</label>
+          <p class="hint">Dacă debifezi, orele se introduc manual în formularul turei (calcularTiempoTurnoManual).</p>
+
+          <label class="sub-label" style="margin-top:14px">Notițe</label>
+          <div class="row wrap-row">
+            <label>Fundal <input type="color" id="set-note-bg" class="color-input" value="#ffffff" /></label>
+            <label>Text <input type="color" id="set-note-text" class="color-input" value="#1a1a1a" /></label>
+            <div class="field"><span>Transparență <b id="note-opacity-val">100%</b></span>
+              <input type="range" id="set-note-opacity" min="20" max="100" value="100" style="width:160px" />
+            </div>
+          </div>
+          <p class="hint">Culorile se aplică notițelor din editorul unei zile.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Ghidul complet de overtime: lung, bine structurat (în gruparea overtime-detail-modal) ===== -->
+  <div id="overtime-detail-modal" class="modal-overlay" style="display:none">
+    <div class="modal-card" style="max-width:820px; width:95%">
+      <div class="modal-header"><h2 id="overtime-detail-title">Ture de Lucru — tipuri de ture și cum îți calculezi orele</h2><button class="modal-close" onclick="closeOvertimeDetail()">✕</button></div>
+      <p class="ot-detail-back"><button class="co-cm-btn" onclick="closeOvertimeDetail()">← Pontaj Ture</button></p>
+      <p class="ot-detail-back"><button class="co-cm-btn share-btn" onclick="backToAppFromOvertimeDetail()">Deschide calculatorul de ture →</button></p>
+      <div id="ot-detail-body" class="ot-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== Cont: logare și sincronizare cloud ===== -->
+  <div id="account-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAccountModal()">
+    <div class="modal-card">
+      <div class="modal-header"><h2>👤 Cont și sincronizare</h2><button class="modal-close" onclick="closeAccountModal()">✕</button></div>
+      <p class="hint">Contul folosește Supabase: introdu e-mailul și parola, iar la prima logare se creează automat contul. Calendarele și setările se salvează în cloud după fiecare modificare și se regăsesc pe orice dispozitiv. Codul JSON și fișierul de backup rămân disponibile ca metodă manuală de transfer.</p>
+      <label class="account-field"><span>E-mail</span><input type="email" id="account-email" placeholder="nume@example.com" autocomplete="email" /></label>
+      <label class="account-field"><span>Parolă cont Supabase</span><input type="password" id="account-pass" placeholder="parola ta" autocomplete="current-password" /></label>
+      <div class="row wrap-row">
+        <button class="mini-btn" id="account-login">🔑 Logare / cont nou</button>
+        <button class="mini-btn ghost" id="account-sync">↻ Sincronizează acum</button>
+        <button class="mini-btn ghost" id="account-logout">Deconectare</button>
+        <button class="mini-btn ghost" id="account-forgot">Am uitat parola</button>
+      </div>
+      <div id="account-change-pass-row" style="display:none; margin-top:10px">
+        <input type="password" id="account-new-pass" class="code-input" placeholder="Parolă nouă (min. 6 caractere)" style="width:62%; margin-right:8px;" />
+        <button class="mini-btn" id="account-change-pass">Schimbă parola</button>
+      </div>
+      <div id="account-recovery-box" style="display:none; margin-top:10px">
+        <div class="account-field" style="margin-bottom:8px">
+          <span>Parola nouă (min. 6 caractere)</span>
+          <input type="password" id="account-recovery-pass" placeholder="Parolă nouă" />
+        </div>
+        <div class="row wrap-row" style="margin-top:4px">
+          <button class="mini-btn" id="account-recovery-set">Setează parola nouă</button>
+        </div>
+      </div>
+      <div id="account-status" class="account-status"><span class="cloud-dot"></span>Nelogat. Datele se salvează pe acest dispozitiv.</div>
+      <label class="account-field"><span>Cod de sincronizare (trimite-l pe e-mail către tine, apoi lipește-l pe celălalt dispozitiv)</span>
+        <textarea id="account-code" class="import-area" style="min-height:70px" placeholder="Apasă „🔑 Logare / cont nou” ca să generezi codul…"></textarea>
+      </label>
+      <div class="import-export-row">
+        <button class="mini-btn" id="account-code-copy">🔗 Copiază codul</button>
+        <button class="mini-btn" id="account-code-load">⬇ Preia din cod</button>
+      </div>
+      <div class="import-export-row">
+        <button class="mini-btn" id="account-download">💾 Descarcă fișierul de configurare</button>
+        <button class="mini-btn" id="account-mail">📧 Trimite codul pe e-mail</button>
+      </div>
+      <p class="hint" id="account-detail">Fișierul JSON conține toate calendarele și setările; pune-l în Google Drive / Dropbox sau trimite-l pe e-mail și reîncarcă-l cu „📥 Importă”. Codul de mai sus e criptat cu parola și poate fi lipit direct pe alt dispozitiv. „Deconectare” oprește sincronizarea, fără a șterge datele de pe dispozitiv.</p>
+      <div class="import-export-row">
+        <button class="mini-btn" id="account-backup">📤 Exportă backup</button>
+        <button class="mini-btn" id="account-restore">📥 Importă backup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Detalii complete pe zi (apasă o zi din calendar) — modules/day-details.js ===== -->
+  <div id="day-details-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDayDetails()">
+    <div class="modal-card">
+      <div class="modal-header"><h2 id="day-details-title">Detalii ziua</h2><button class="modal-close" onclick="closeDayDetails()">✕</button></div>
+      <div id="day-details-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== Import / export setări și calendar ===== -->
+  <div id="import-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeImportModal()">
+    <div class="modal-card">
+      <div class="modal-header"><h2>📥 Importă setări / calendar</h2><button class="modal-close" onclick="closeImportModal()">✕</button></div>
+      <p class="hint">Alege un fișier JSON exportat din aplicație sau lipește conținutul. Poți importa toate calendarele, un singur calendar sau doar zilele libere.</p>
+      <input type="file" id="import-file" class="import-file" accept=".json,.txt,application/json,text/plain" />
+      <p class="hint" style="margin-top:10px">Sau lipește aici textul JSON:</p>
+      <textarea id="import-text" class="import-area" placeholder='{"calendars":[...],"activeId":"..."}'></textarea>
+      <div class="row wrap-row" style="margin-top:10px">
+        <label class="chk"><input type="checkbox" id="import-merge" checked /> Păstrează calendarele existente (adaugă ce lipsește)</label>
+      </div>
+      <div id="import-status" class="account-status">Alege un fișier sau lipește textul, apoi apasă „Importă”.</div>
+      <div class="import-export-row">
+        <button class="mini-btn" id="import-do">📥 Importă</button>
+        <button class="mini-btn" id="import-export">📤 Exportă tot (backup JSON)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modale: instalare, distribuire, mini-joc ===== -->
+  <div id="pwa-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePwaModal()">
+    <div class="modal-card">
+      <div class="modal-header"><h2>📱 Instalează aplicația pe telefon</h2><button class="modal-close" onclick="closePwaModal()">✕</button></div>
+      <p class="hint">Aplicația completă pentru telefon este gata: conține tot calculatorul și funcționează și fără internet. Nu este nevoie de Google Play sau de cont.</p>
+      <div class="import-export-row">
+        <a class="share-link copy" href="Pontaj Ture.apk" download>🤖 Descarcă aplicația Android (Pontaj Ture, .apk)</a>
+      </div>
+      <p class="hint"><b>Cum instalezi:</b> descarcă fișierul .apk pe telefon, deschide-l și apasă „Instalează”. Dacă Android întreabă de surse necunoscute, activează opțiunea o singură dată (Setări → Securitate → Instalare din surse necunoscute) — aplicația nu cere nicio permisiune specială. Pe iPhone folosește pașii Safari de mai jos.</p>
+      <div class="import-export-row">
+        <a class="share-link copy" href="Pontaj Ture.zip" download>💻 Descarcă pachetul Pontaj Ture pentru PC (Windows / Mac / Linux, .zip)</a>
+      </div>
+      <p class="hint">Pachetul pentru PC conține tot site-ul; dezlipește arhiva și deschide <b>Deschive Pontaj Ture.html</b> (rădăcina arhivei este un singur punct de intrare cu iconița verde; conținutul tehnic este în subfolderul <b>app/</b>).</p>
+      <div class="pwa-steps">
+        <b>Telefon Android:</b> deschide meniul browserului → „Instalează aplicația” / „Adaugă la ecranul de start”.<br />
+        <b>iPhone / iPad:</b> butonul Partajează al Safari → „Adaugă la ecranul de start”.<br />
+        <b>Windows / Mac / Linux:</b> pictograma de instalare din bara adresei sau meniul browserului → „Instalează”.
+      </div>
+      <p class="hint">Vrei ghidul pas cu pas pentru iPhone, cu notificări incluse? Deschide <a href="iphone.html"><b>📱 Varianta pentru iPhone</b></a>.</p>
+      <div id="pwa-android" style="display:none">
+        <p class="hint">Deschide meniul browserului → <b>„Instalează aplicația”</b> sau <b>„Adaugă la ecranul de start”</b>.</p>
+      </div>
+      <div id="pwa-ios" style="display:none">
+        <p class="hint">Apasă butonul <b>Partajează</b> al Safari-ului → <b>„Adaugă la ecranul de start”</b>.</p>
+      </div>
+      <div id="pwa-desktop" style="display:none">
+        <p class="hint">Apasă pictograma de instalare din bara adresei browserului (sau meniul browserului → „Instalează”).</p>
+      </div>
+      <button class="co-cm-btn" id="pwa-native-btn" onclick="triggerNativeInstall()" style="display:none">Instalează acum</button>
+    </div>
+  </div>
+
+  <div id="share-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeShareModal()">
+    <div class="modal-card">
+      <div class="modal-header"><h2>📤 Trimite unui coleg</h2><button class="modal-close" onclick="closeShareModal()">✕</button></div>
+      <p class="hint">Trimite legătura către calculatorul de ture.</p>
+      <a class="share-link wa" id="share-whatsapp" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a class="share-link fb" id="share-facebook" target="_blank" rel="noopener">📘 Facebook</a>
+      <button class="share-link copy" onclick="copyShareLink()">🔗 <span id="copy-btn-text">Copiază linkul</span></button>
+    </div>
+  </div>
+
+  <div id="game-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeGame()">
+    <div class="modal-card">
+      <div class="modal-header"><h2>🎯 Mini-joc: ghicește tura</h2><button class="modal-close" onclick="closeGame()">✕</button></div>
+      <p class="hint">Apasă butonul care corespunde categoriei afișate. Trei puncte și ești campion de tură!</p>
+      <div id="game-question" class="game-question"></div>
+      <div id="game-answers" class="game-answers"></div>
+      <p id="game-score" class="game-score"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function openMenuIfClosed(menuId) {
+      var head = document.querySelector('[data-menu-id="' + menuId + '"]');
+      var bodyId = head && head.getAttribute('data-menu-body');
+      var body = bodyId ? document.getElementById(bodyId) : null;
+      if (head && body && body.style.display === 'none') {
+        head.click();
+      }
+    }
+
+    function focusTarget(el) {
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.remove('wizard-focus-flash');
+      void el.offsetWidth;
+      el.classList.add('wizard-focus-flash');
+    }
+
+    var stepButtons = document.querySelectorAll('[data-wizard-step]');
+    stepButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var step = btn.getAttribute('data-wizard-step');
+        stepButtons.forEach(function (b) {
+          b.classList.toggle('is-active', b === btn);
+        });
+
+        if (step === '1') {
+          openMenuIfClosed('gen');
+          openMenuIfClosed('tip');
+          focusTarget(document.querySelector('.gen-section'));
+        } else if (step === '2') {
+          focusTarget(document.getElementById('cal') || document.querySelector('.cal-grid'));
+        } else if (step === '3') {
+          openMenuIfClosed('sdsl');
+          openMenuIfClosed('salariu');
+          focusTarget(document.getElementById('sdsl-section') || document.querySelector('.stats'));
+        }
+      });
+    });
+
+    var revealEls = document.querySelectorAll('[data-reveal]');
+    if (revealEls.length) {
+      if (!('IntersectionObserver' in window) ||
+          (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+      } else {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+        revealEls.forEach(function (el) { io.observe(el); });
+      }
+    }
+  })();
+  </script>
+  <footer class="app-footer">Inspirație structură ghiduri: app.calculatorture.ro</footer>
+
+  <!-- Supabase SDK (UMD), bundled locally so the app also opens offline, including in the APK. -->
+  <script src="supabase.js"></script>
+  <script src="holidays-data.js"></script>
+  <script src="mechanics-data.js"></script>
+  <!-- Ghiduri/legislație pentru orele suplimentare + detaliile complete ale zilelor (module noi) -->
+  <script src="guides-data.js"></script>
+  <script src="guides.js"></script>
+  <script src="modules/day-details.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

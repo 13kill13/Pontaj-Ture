@@ -1,0 +1,12 @@
+{
+  "id": "unk_7aca4c860df454da",
+  "revision": 2,
+  "question": "Dist/index.html vs root index.html și dist/styles.css vs root styles.css: sunt asemenea (what would settle it: diff)?",
+  "severity": "medium",
+  "domain": "general",
+  "status": "resolved",
+  "probes": [],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "diff: root/styles.css == dist/styles.css și root/app.js == dist/app.js (byte-identical); dist/index.html == root/index.html + ?v=4ef7ed7f14a5 pe script/link-uri; dist/sw.js == root/sw.js cu __BUILD_VERSION__ înlocuit cu 4ef7ed7f14a5."
+}

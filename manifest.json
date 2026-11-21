@@ -1,0 +1,35 @@
+{
+  "name": "Pontaj Ture — Ore de lucru și ture libere",
+  "short_name": "Pontaj Ture",
+  "description": "Calculează orele de lucru, norma lunii, orele suplimentare și turele libere.",
+  "lang": "ro",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#1D9E75",
+  "shortcuts": [
+    { "name": "Notificări ture", "short_name": "Notificări", "url": "index.html#notify", "description": "Setări pentru notificările programului de ture" },
+    { "name": "Ghid iPhone", "short_name": "iPhone", "url": "iphone.html", "description": "Instalează aplicația pe iPhone sau iPad" }
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

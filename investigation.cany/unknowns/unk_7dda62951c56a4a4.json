@@ -1,0 +1,14 @@
+{
+  "id": "unk_7dda62951c56a4a4",
+  "revision": 2,
+  "question": "Dist/index.html vs root index.html și dist/styles.css vs root styles.css: sunt asemenea?",
+  "severity": "medium",
+  "domain": "general",
+  "status": "resolved",
+  "probes": [
+    "diff -r între root și dist pentru fișierele de bază după node build.js."
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "după rezolvarea unk_7aca4c860df454da — același rezultat: root și dist conțin aceleași fișiere, dist are generate și cache-bust-uri."
+}

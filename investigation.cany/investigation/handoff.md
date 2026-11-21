@@ -1,0 +1,10 @@
+# Handoff
+
+Responsiv: index.html + calculator-salariu.html au viewport-fit=cover; styles.css: body padding = calc(2rem + env(safe-area-inset-top/right/bottom/left)) + min-height:100dvh + html/body { overflow-x: hidden } (styles.css line ~54-62, ~638, ~1068).
+PWA: sw.js (root, placeholder __BUILD_VERSION__ neinjectat) + dist/sw.js: ASSETS include index.html, calculator-salariu.html, iphone.html, styles.css, app.js, supabase.js, holidays-data.js, mechanics-data.js, guides-data.js, guides.js, guides-data.json, modules/day-details.js, holidays-data.json, mechanics-data.json, manifest.json, icon.svg, icon-192.png, icon-512.png, apple-touch-icon.png; install tolerant (Promise.allSettled — în root lipsește supabase.js/holidays-data.js/mechanics-data.js/guides-data.js, exist în dist); fallback 404 la navigation și la scripte offline-fără-copie.
+Manifest: icons + start_url index.html + scope . ; apple-touch-icon link adăugat la index.html (AGENTS rule 1).
+App/JS: app.js: checkSupabaseSession + loadDataFromSupabase au try/catch offline (nu blochează la deschidere; markCloudPending la offline). sw.js: tolerant install; app.js: --check OK.
+Build: node build.js rulezat — dist/ regenerat; cache version 4ef7ed7f14a5 (hashul include sw.js); activate purge-ază vechile cache-uri. dist: == root + ?v=4ef7ed7f14a5 pe script/link-uri și fișiere generate (supabase.js etc.). rebuild_check: PASSED (build passed, no tests).
+APK: build-apk.js se termină cu 'toolchain Android absență' (nu există java/apktool/aapt) — nu se poate construi APK acum; dist/ contine doar site-ul (reconstruirea APK va avea nevoie de un PC cu toolchain).
+Remaining manual: browser-verify offline (încărcați ~/Documents/Craft Anything/Pontaj Ture/index.html cu rețeaua oprită, verificați consola), observați dacă calculele/renderingul par OK, și decideți dacă trebuie lansat APK-ul oarecare.
+Traps: root/sw.js păstrează __BUILD_VERSION__ (normal dev); în root, noteșteți că SW instalează 'pontaj-ture-v__BUILD_VERSION__' ca nume de cache literal.

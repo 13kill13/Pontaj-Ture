@@ -1,0 +1,50 @@
+{
+  "source": "Codul Muncii (Legea 53/2003, art. 120–123) și ghidurile Pontaj Ture (actualizat 2026)",
+  "updated": "2026-11-21",
+  "title": "Ce legi se aplică pentru orele suplimentare?",
+  "intro": "Conform Codului Muncii din România (Legea 53/2003), munca suplimentară se compensează prin ore libere plătite în următoarele 90 de zile calendaristice sau, dacă nu este posibil, printr-un spor la salariu de minimum 75% din salariul de bază.",
+  "articles": [
+    {
+      "title": "Ture de lucru: tipuri de ture și cum îți calculezi orele",
+      "desc": "12/24, 12/48, 3 schimburi, 4/2, împărțirea la 00:00, exemple și întrebări frecvente.",
+      "target": "internal",
+      "articleId": "ture-de-lucru"
+    },
+    {
+      "title": "Calculator Salariu Net 2026 — cu sporuri și ture",
+      "desc": "Calculează salariul net din brut, CAS/CASS/impozit, spor de noapte și ore suplimentare.",
+      "url": "calculator-salariu.html",
+      "target": "external"
+    },
+    {
+      "title": "Cum se calculează pontajul în ture — ghid complet 2026",
+      "desc": "Norma lunară pe lunile anului 2026, calculul orelor suplimentare și marcarea CO / CM.",
+      "target": "internal",
+      "articleId": "pontaj-ture"
+    },
+    {
+      "title": "Sporul de noapte 2026 — cât e și cum se calculează",
+      "desc": "Intervalul 22:00–06:00, sporul de 25%, condiții de acordare și exemplu calculat.",
+      "target": "internal",
+      "articleId": "spor-noapte"
+    },
+    {
+      "title": "Program lucru în schimburi la port, spital și jandarmerie",
+      "desc": "Specificul fiecărui domeniu, tipuri de ture legale și reguli privind repausul.",
+      "target": "internal",
+      "articleId": "port-spital-jandarmerie"
+    },
+    {
+      "title": "Concediu de odihnă în ture — câte zile ai dreptul și cum se calculează",
+      "desc": "Baza legală de 21 de zile lucrătoare, numărarea CO în schimburi și reportarea.",
+      "target": "internal",
+      "articleId": "concediu-ture"
+    },
+    {
+      "title": "Calculator ore suplimentare România 2026 — cum știi dacă ești în plus sau minus",
+      "desc": "Regulile Codului Muncii, compensarea prin timp liber sau spor 75% și exemplu practic.",
+      "target": "internal",
+      "articleId": "ore-suplimentare"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "pontaj-ture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calculator de ore de lucru, ture si concedii",
+  "scripts": {
+    "build": "node build.js"
+  }
+}
