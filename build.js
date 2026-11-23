@@ -9,7 +9,7 @@ const root = __dirname;
 const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });
 
-for (const file of ['index.html', 'calculator-salariu.html', 'iphone.html', 'styles.css', 'app.js', 'MECHANICS.md', 'mechanics-data.json', 'holidays-data.json', 'manifest.json', 'icon.svg', 'sw.js', 'guides-data.json', 'guides.js', 'modules/day-details.js']) {
+for (const file of ['index.html', 'calculator-salariu.html', 'iphone.html', 'styles.css', 'app.js', 'MECHANICS.md', 'mechanics-data.json', 'holidays-data.json', 'manifest.json', 'icon.svg', 'sw.js', 'guides-data.json', 'guides.js', 'modules/day-details.js', 'modules/dialogs.js', 'modules/salary.js', 'modules/sectors.js', 'modules/ux.js', 'modules/ux2.js', 'modules/auth.js', 'modules/i18n.js', 'theme.js', 'instalare.html']) {
   fs.mkdirSync(path.dirname(path.join(dist, file)), { recursive: true });
   fs.copyFileSync(path.join(root, file), path.join(dist, file));
 }
@@ -171,7 +171,7 @@ fs.writeFileSync(
 const versionHash = crypto.createHash('sha256');
 ['index.html', 'calculator-salariu.html', 'iphone.html', 'styles.css', 'app.js', 'sw.js',
  'mechanics-data.json', 'holidays-data.json', 'vendor/supabase.js',
- 'guides-data.json', 'guides.js', 'modules/day-details.js'].forEach(f => {
+ 'guides-data.json', 'guides.js', 'modules/day-details.js', 'modules/dialogs.js', 'modules/salary.js', 'modules/sectors.js', 'modules/ux.js', 'modules/ux2.js', 'modules/auth.js', 'theme.js', 'instalare.html'].forEach(f => {
   versionHash.update(f); versionHash.update(fs.readFileSync(path.join(root, f)));
 });
 const buildVersion = versionHash.digest('hex').slice(0, 12);
@@ -279,30 +279,60 @@ function zipStore(entries) {
 // like a non-technical user expects (rule 5): the root has ONE obvious entry point
 // („Deschive Pontaj Ture.html”, the green-calendar launcher) and all the technical
 // files are grouped in an ordered „app/” subfolder. ----------
-const launcherHtml =
-  '<!DOCTYPE html>\n<html lang="ro">\n<head>\n  <meta charset="UTF-8" />\n' +
-  '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
-  '  <title>Pontaj Ture</title>\n' +
-  '  <link rel="icon" href="app/icon.svg" type="image/svg+xml" />\n' +
-  '  <style>\n' +
-  '    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; ' +
-  'max-width:560px; margin:6rem auto; padding:0 1.5rem; text-align:center; background:#f5f5f5; }\n' +
-  '    .launcher-card { background:#ffffff; border:1px solid #dddddd; border-radius:14px; ' +
-  'padding:2.5rem 1.75rem; box-shadow:0 2px 12px rgba(0,0,0,0.08); }\n' +
-  '    .launcher-icon { width:96px; height:96px; display:block; margin:0 auto 1.25rem; }\n' +
-  '    h1 { font-size:22px; color:#1a1a1a; }\n' +
-  '    .launcher-card p { color:#666666; font-size:13.5px; line-height:1.5; margin:10px 0 0; }\n' +
-  '    .launch-btn { display:inline-block; background:#1D9E75; color:#ffffff; ' +
-  'padding:12px 30px; border-radius:10px; font-weight:600; text-decoration:none; ' +
-  'font-size:15px; margin-top:16px; }\n' +
-  '  </style>\n</head>\n<body>\n' +
-  '  <div class="launcher-card">\n' +
-  '    <img src="app/icon.svg" alt="Pontaj Ture" class="launcher-icon" />\n' +
-  '    <h1>Pontaj Ture</h1>\n' +
-  '    <p>Calculatorul de ture complet — aplicația este la <b>app/index.html</b>.</p>\n' +
-  '    <a class="launch-btn" href="app/index.html">Deschive Pontaj Ture</a>\n' +
-  '  </div>\n</body>\n</html>\n';
-const zipEntries = [{ name: 'Deschive Pontaj Ture.html', data: Buffer.from(launcherHtml, 'utf8') }];
+const iconSvgB64 = fs.existsSync(path.join(dist, 'icon.svg')) ? fs.readFileSync(path.join(dist, 'icon.svg')).toString('base64') : '';
+const launcherHtml = `<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pontaj Ture</title>
+  <link rel="icon" href="data:image/svg+xml;base64,${iconSvgB64}" type="image/svg+xml" />
+  <style>
+    :root { --bg:#eef3f0; --card:#fff; --ink:#10241c; --muted:#5b6b64; --line:#d9e2dd; --green:#1D9E75; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0d1512; --card:#16201c; --ink:#e6f2ec; --muted:#9db1a8; --line:#2a3a33; } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.5; padding:40px 18px; }
+    .card { max-width:620px; margin:0 auto; background:var(--card); border:1px solid var(--line); border-radius:22px; padding:32px 26px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.08); animation:fl 6s ease-in-out infinite; }
+    @keyframes fl { 50% { transform:translateY(-5px); } }
+    @media (prefers-reduced-motion: reduce) { .card { animation:none; } }
+    .icon { width:96px; height:96px; border-radius:24px; display:block; margin:0 auto 14px; }
+    h1 { margin:0 0 6px; font-size:28px; letter-spacing:-.02em; }
+    p { color:var(--muted); font-size:14px; margin:6px 0; }
+    .go { display:inline-block; margin:18px 0 8px; background:var(--green); color:#fff; padding:14px 34px; border-radius:14px; font-weight:700; font-size:16px; text-decoration:none; transition:transform .15s, box-shadow .15s; }
+    .go:hover { transform:translateY(-2px); box-shadow:0 10px 20px -10px var(--green); }
+    .steps { text-align:left; margin-top:22px; display:grid; gap:10px; }
+    details { border:1px solid var(--line); border-radius:14px; padding:10px 14px; }
+    summary { cursor:pointer; font-weight:700; }
+    ol { margin:10px 0 2px 20px; padding:0; color:var(--muted); font-size:13.5px; } li { margin:4px 0; }
+    .more { display:inline-block; margin-top:14px; color:var(--green); font-weight:700; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="icon" alt="Pontaj Ture" src="data:image/svg+xml;base64,${iconSvgB64}" />
+    <h1>Pontaj Ture</h1>
+    <p>Calendar de ture, ore pontate, SDSL, ture libere și salariu — pe computerul tău.</p>
+    <a class="go" href="app/index.html">Deschide Pontaj Ture</a>
+    <p>Datele rămân pe acest computer. Funcționează și fără internet.</p>
+    <div class="steps">
+      <details><summary>🪟 Windows — scurtătură pe desktop (cu iconița aplicației)</summary><ol>
+        <li>Deschide <b>Pontaj Ture</b> în Chrome sau Edge (butonul de mai sus).</li>
+        <li>Chrome: meniul ⋮ → <b>Salvează și distribuie</b> → <b>Creează comandă rapidă…</b> (bifează „Deschide ca fereastră”). Edge: meniul ⋯ → <b>Aplicații</b> → <b>Instalează acest site ca aplicație</b>.</li>
+        <li>Aplicația apare pe desktop și în meniul Start, cu iconița ei.</li></ol></details>
+      <details><summary>🍎 Mac — în Dock</summary><ol>
+        <li>Deschide aplicația în Safari: <b>Fișier → Adaugă în Dock…</b> (macOS Sonoma sau mai nou).</li>
+        <li>În Chrome sau Edge: meniul ⋮ → <b>Salvează și distribuie → Instalează Pontaj Ture</b>.</li></ol></details>
+      <details><summary>🐧 Linux</summary><ol>
+        <li>Deschide aplicația în Chrome, Chromium sau Edge.</li>
+        <li>Meniul ⋮ → <b>Salvează și distribuie → Instalează Pontaj Ture</b>. Apare în lista de aplicații.</li>
+        <li>În Firefox: marchează pagina cu ★ sau trage iconița de lângă adresă pe desktop.</li></ol></details>
+    </div>
+    <a class="more" href="app/instalare.html">📖 Ghid complet pentru toate dispozitivele →</a>
+  </div>
+</body>
+</html>
+`;
+const zipEntries = [{ name: 'Pontaj Ture.html', data: Buffer.from(launcherHtml, 'utf8') }];
 fs.readdirSync(dist)
   .filter(f => fs.statSync(path.join(dist, f)).isFile() && !/^calculator-ture(\.apk|\.apk\.idsig|-pc\.zip)$/.test(f) && f !== 'Pontaj Ture.zip' && f !== 'Pontaj Ture.apk' && f !== 'Pontaj Ture.apk.idsig')
   .forEach(f => zipEntries.push({ name: 'app/' + f, data: fs.readFileSync(path.join(dist, f)) }));
@@ -311,16 +341,17 @@ if (fs.existsSync(path.join(dist, 'modules'))) {
     .filter(f => fs.statSync(path.join(dist, 'modules', f)).isFile())
     .forEach(f => zipEntries.push({ name: 'app/modules/' + f, data: fs.readFileSync(path.join(dist, 'modules', f)) }));
 }
+if (fs.existsSync(path.join(dist, 'icon-192.png'))) {
+  const png = fs.readFileSync(path.join(dist, 'icon-192.png'));
+  const hdr = Buffer.alloc(22);
+  hdr.writeUInt16LE(0, 0); hdr.writeUInt16LE(1, 2); hdr.writeUInt16LE(1, 4);
+  hdr[6] = 192; hdr[7] = 192; hdr.writeUInt16LE(1, 10); hdr.writeUInt16LE(32, 12);
+  hdr.writeUInt32LE(png.length, 14); hdr.writeUInt32LE(22, 18);
+  fs.writeFileSync(path.join(dist, 'icon.ico'), Buffer.concat([hdr, png]));
+  if (!zipEntries.some(e => e.name === 'app/icon.ico')) zipEntries.push({ name: 'app/icon.ico', data: fs.readFileSync(path.join(dist, 'icon.ico')) });
+}
 fs.writeFileSync(path.join(dist, 'Pontaj Ture.zip'), zipStore(zipEntries));
 
 console.log('Static site built into dist/ (with generated icons and the PC package)');
 
-// ---------- Android package: the same site, offline, in a signed installable APK ----------
-// Runs after the PC ZIP is written so the APK is not duplicated inside that archive.
-try {
-  require('./build-apk')();
-} catch (err) {
-  // The static deliverable must never be lost because of an optional native toolchain.
-  console.error('APK build error: ' + (err && err.message ? err.message : err));
-  if (process.env.BUILD_APK_STRICT === '1') throw err;
-}
+// Nu se mai generează APK: aplicația se instalează ca PWA (vezi instalare.html).

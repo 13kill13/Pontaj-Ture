@@ -12,6 +12,7 @@
   <meta name="theme-color" content="#1D9E75" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <script src="theme.js"></script>
   <style>
     :root { --green:#1D9E75; --ink:#1c1c1e; --muted:#6e6e73; --line:#e5e5ea; --bg:#f2f2f7; --card:#fff; }
     * { box-sizing:border-box; margin:0; padding:0; }
@@ -76,6 +77,11 @@
     footer a { color:var(--green); text-decoration:none; font-weight:600; }
     @media (max-width:560px) { .hero { flex-direction:column; align-items:flex-start; } .phone { align-self:center; }
       h1 { font-size:29px; } .grid2 { grid-template-columns:1fr; } }
+  
+    [data-theme="dark"] { --ink:#f2f2f7; --muted:#a1a1aa; --line:#2c2c30; --bg:#0d1512; --card:#16201c; }
+    [data-theme="dark"] .badge { background:#16372c; color:#7be0b8; }
+    [data-theme="dark"] .step, [data-theme="dark"] .card, [data-theme="dark"] .note { background:var(--card); border-color:var(--line); }
+    [data-theme="dark"] .note { background:#2b2614; color:#f4e6b3; }
   </style>
 </head>
 <body>

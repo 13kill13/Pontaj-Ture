@@ -1,8 +1,8 @@
 # Reguli permanente pentru proiectul „Pontaj Ture”
 
 1. **Identitate, branding și iconiță:**
-   - Numele oficial al aplicației este **„Pontaj Ture”** (în titluri HTML, interfață, `manifest.json`, metadate, aplicația Android `.apk` și arhiva `.zip`).
-   - Iconița oficială este iconița verde cu calendar alb (`icon.svg`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`) — folosește-o peste tot: favicon, PWA, pachetul Android `.apk` și fișierul de pornire din arhiva PC `.zip`.
+   - Numele oficial al aplicației este **„Pontaj Ture”** (în titluri HTML, interfață, `manifest.json`, metadate, arhiva `.zip` pentru PC (lansatorul „Pontaj Ture.html”)).
+   - Iconița oficială este iconița verde cu calendar alb (`icon.svg`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`) — folosește-o peste tot: favicon, PWA, instalarea PWA (Android, iPhone, Windows, Mac, Linux — vezi `instalare.html`)
    - Păstrează intactă nota discretă din subsolul paginii (footer): `Inspirație structură ghiduri: app.calculatorture.ro`.
 
 2. **Arhitectură, căi și mod offline (PWA):**
@@ -29,6 +29,6 @@
    - Nicio modificare nu este considerată finalizată până când folderul `dist` nu este complet regenerat.
    - La fiecare sarcină, rulează obligatoriu scripturile de build astfel încât în `dist` să fie actualizate la ultima versiune:
      1. Toate fișierele web/PWA (`index.html`, `sw.js`, `manifest.json`, `supabase.js`, `app.js`, `guides.js`, `modules/`, datele și iconițele);
-     2. Pachetul Android **`.apk`** (cu iconița verde de calendar și numele „Pontaj Ture”);
+     2. (Nu se mai generează `.apk`; aplicația se instalează ca PWA — ghidul `instalare.html`.)
      3. Arhiva PC **`.zip`** (cu structura intuitivă de la punctul 5).
-   - Verifică ca butoanele de descărcare din interfață să indice exact către fișierele `.apk` și `.zip` regenerate din `dist` (fără linkuri moarte / 404).
+   - Verifică ca butoanele de descărcare din interfață să indice exact către fișierul `.zip` regenerat și către `instalare.html` din `dist` (fără linkuri moarte / 404).

@@ -6,7 +6,7 @@ const CACHE = 'pontaj-ture-v__BUILD_VERSION__';
 const ASSETS = [
   './', './index.html', './calculator-salariu.html', './iphone.html', './styles.css',
   './app.js', './supabase.js', './holidays-data.js', './mechanics-data.js',
-  './guides-data.js', './guides.js', './guides-data.json', './modules/day-details.js',
+  './guides-data.js', './guides.js', './guides-data.json', './modules/day-details.js', './modules/dialogs.js', './modules/salary.js', './modules/sectors.js', './modules/ux.js', './modules/ux2.js', './modules/auth.js', './modules/i18n.js', './theme.js', './instalare.html', './calculator-salariu.html', './iphone.html',
   './holidays-data.json', './mechanics-data.json', './manifest.json',
   './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
 ];

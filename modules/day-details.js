@@ -14,7 +14,7 @@
     'Sf. Maria': 'Sfânta Maria'
   };
   const CAT_FULL = {
-    legal: 'Sărbătoare legale',
+    legal: 'Sărbătoare legală',
     religios: 'Sărbători religioase',
     vacanta: 'Vacanțe școlare',
     punte: 'Punți / concediu sugerat'

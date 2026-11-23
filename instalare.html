@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Instalează Pontaj Ture — Android, iPhone, Windows, Mac, Linux</title>
+  <meta name="theme-color" content="#1D9E75" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <script src="theme.js"></script>
+  <style>
+    :root { --green:#1D9E75; --ink:#1c1c1e; --muted:#6e6e73; --line:#e5e5ea; --bg:#f2f2f7; --card:#fff; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--ink); min-height:100vh;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+      font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+      padding:calc(env(safe-area-inset-top, 0px) + 28px) 18px calc(env(safe-area-inset-bottom, 0px) + 40px); }
+    .wrap { max-width:720px; margin:0 auto; }
+    header { text-align:center; margin-bottom:26px; }
+    .badge { display:inline-flex; align-items:center; gap:6px; background:#e7f6f0; color:#0e6b50;
+      border-radius:20px; padding:6px 12px; font-size:12px; font-weight:600; }
+    h1 { font-size:34px; line-height:1.12; letter-spacing:-.6px; font-weight:700; margin:14px 0 8px; }
+    h1 span { color:var(--green); }
+    header p { color:var(--muted); font-size:16px; max-width:520px; margin:0 auto; }
+    .hero { background:linear-gradient(155deg,#1D9E75,#137a5a); color:#fff; border-radius:26px;
+      padding:26px; display:flex; gap:24px; align-items:center; box-shadow:0 12px 32px rgba(29,158,117,.22); margin-bottom:22px; }
+    .hero .copy { flex:1; }
+    .hero h2 { font-size:21px; margin-bottom:8px; font-weight:650; }
+    .hero p { font-size:13.5px; opacity:.92; }
+    .hero .actions { display:flex; gap:9px; flex-wrap:wrap; margin-top:16px; }
+    .hero a, .hero button { border:0; border-radius:13px; padding:11px 15px; font-size:14px; font-weight:600;
+      cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+    .btn-white { background:#fff; color:#0e6b50; }
+    .btn-ghost { background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.45) !important; }
+    /* Mockup telefon */
+    .phone { width:186px; flex:none; background:#111; border:7px solid #2b2b2e; border-radius:30px;
+      padding:8px; box-shadow:0 10px 24px rgba(0,0,0,.28); }
+    .phone .screen { background:#fff; color:#1c1c1e; border-radius:20px; overflow:hidden; font-size:9px; }
+    .phone .bar { height:20px; display:flex; align-items:center; justify-content:space-between; padding:0 9px;
+      font-size:8px; font-weight:600; color:#3c3c43; }
+    .phone .ttl { text-align:center; font-weight:700; font-size:11px; padding:4px 0 7px; }
+    .phone .days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; padding:0 6px; }
+    .phone .dh { text-align:center; color:#8e8e93; font-size:6.5px; padding-bottom:3px; }
+    .phone .cell { aspect-ratio:1; border-radius:4px; background:#f2f2f7; position:relative; padding:2px; }
+    .phone .cell.z { background:#e4e4e4; } .phone .cell.n { background:#555; color:#fff; }
+    .phone .cell.x { background:#fff; border:1px solid #eee; } .phone .cell.s { background:#F7977A; color:#550804; }
+    .phone .cell b { font-size:6.5px; } .phone .cell em { position:absolute; right:2px; bottom:1px; font-style:normal; font-weight:800; font-size:6px; }
+    .phone .cell.blank { background:#fff; border:1px solid #eee; }
+    .phone .mini-legend { display:flex; flex-wrap:wrap; gap:3px 6px; padding:8px 7px 10px; color:#6e6e73; font-size:6px; }
+    .phone .mini-legend i { display:inline-block; width:6px; height:6px; border-radius:2px; margin-right:2px; }
+    h2.section { font-size:23px; letter-spacing:-.4px; margin:28px 0 4px; font-weight:700; }
+    .lead { color:var(--muted); font-size:14px; margin-bottom:14px; }
+    .steps { display:grid; gap:10px; }
+    .step { display:flex; gap:14px; background:var(--card); border-radius:16px; padding:15px 16px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04); align-items:flex-start; }
+    .num { width:28px; height:28px; flex:none; border-radius:50%; background:#1D9E75; color:#fff;
+      display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
+    .step b { display:block; margin-bottom:2px; } .step span { color:var(--muted); font-size:13.5px; }
+    .step .share { display:inline-flex; align-items:center; gap:4px; background:#e7f6f0; color:#0e6b50;
+      border-radius:7px; padding:1px 6px; font-weight:600; font-size:12px; }
+    .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; }
+    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+    .card .ic { font-size:22px; } .card h3 { font-size:15px; margin:7px 0 4px; } .card p { color:var(--muted); font-size:13px; }
+    .note { margin-top:22px; background:#fff8e6; border:1px solid #f5dfa6; border-radius:16px; padding:16px; }
+    .note b { color:#8a5b00; } .note p { font-size:13px; color:#6b5620; margin-top:4px; }
+    #test-result { margin-top:10px; font-size:13px; font-weight:600; color:#0e6b50; min-height:18px; }
+    .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    .cta a, .cta button { flex:1; min-width:170px; text-align:center; text-decoration:none; border-radius:14px;
+      padding:14px 16px; font-size:15px; font-weight:650; cursor:pointer; border:0; }
+    .cta .primary { background:var(--green); color:#fff; } .cta .secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+    footer { text-align:center; color:#8e8e93; font-size:12px; margin-top:30px; }
+    footer a { color:var(--green); text-decoration:none; font-weight:600; }
+    @media (max-width:560px) { .hero { flex-direction:column; align-items:flex-start; } .phone { align-self:center; }
+      h1 { font-size:29px; } .grid2 { grid-template-columns:1fr; } }
+  
+    [data-theme="dark"] { --ink:#f2f2f7; --muted:#a1a1aa; --line:#2c2c30; --bg:#0d1512; --card:#16201c; }
+    [data-theme="dark"] .badge { background:#16372c; color:#7be0b8; }
+    [data-theme="dark"] .step, [data-theme="dark"] .card, [data-theme="dark"] .note { background:var(--card); border-color:var(--line); }
+    [data-theme="dark"] .note { background:#2b2614; color:#f4e6b3; }
+  
+    .tabs { display:flex; gap:8px; overflow-x:auto; padding:4px 2px 10px; scrollbar-width:thin; position:sticky; top:0; background:var(--bg); z-index:5; }
+    .tabs button { flex:none; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:10px 16px; font-size:14px; font-weight:650; cursor:pointer; transition:transform .15s, background .15s; }
+    .tabs button:hover { transform:translateY(-1px); } .tabs button.on { background:#1D9E75; color:#fff; border-color:#1D9E75; }
+    .pane { display:none; animation:rise .35s both; } .pane.on { display:block; }
+    @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+    .dl { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 4px; }
+    .dl button, .dl a { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:13px; padding:11px 15px; font-size:14px; font-weight:650; cursor:pointer; text-decoration:none; transition:transform .15s; }
+    .dl .main { background:#1D9E75; color:#fff; border-color:#1D9E75; } .dl button:hover, .dl a:hover { transform:translateY(-2px); }
+    .small { color:var(--muted); font-size:13px; margin-top:8px; }
+    kbd { background:var(--line); border-radius:6px; padding:1px 6px; font-size:12px; }
+    @media (prefers-reduced-motion: reduce) { .pane { animation:none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge">⬇ Instalare</div>
+      <h1>Pontaj Ture, <span>pe orice dispozitiv.</span></h1>
+      <p>Aplicația se instalează direct din browser: fără Google Play sau App Store, fără cont și cu funcționare și fără internet. Alege dispozitivul tău.</p>
+    </header>
+    <div class="tabs" id="tabs"><button data-t="android">Android</button><button data-t="iphone">iPhone / iPad</button><button data-t="windows">Windows</button><button data-t="mac">Mac</button><button data-t="linux">Linux</button></div>
+    <div class="pane" id="p-android"><div class="steps"><div class="step"><div class="num">1</div><div><b>Deschide aplicația în Chrome</b><span>Intră pe adresa Pontaj Ture (de exemplu pontajture.pages.dev) în Chrome sau în browserul telefonului.</span></div></div><div class="step"><div class="num">2</div><div><b>Deschide meniul browserului</b><span>Apasă cele trei puncte ⋮ din colțul dreapta-sus. În Samsung Internet apasă ☰ (meniul de jos).</span></div></div><div class="step"><div class="num">3</div><div><b>Alege „Instalează aplicația”</b><span>Dacă nu apare, alege „Adaugă la ecranul de start” (în Samsung Internet: „Adaugă pagina la” → „Ecran de pornire”).</span></div></div><div class="step"><div class="num">4</div><div><b>Confirmă</b><span>Apasă „Instalează” sau „Adaugă”. Pictograma Pontaj Ture apare pe ecranul de start și în lista de aplicații, iar aplicația se deschide fără bara browserului.</span></div></div></div></div><div class="pane" id="p-iphone"><div class="steps"><div class="step"><div class="num">1</div><div><b>Deschide aplicația în Safari</b><span>Instalarea pe iPhone și iPad merge doar din Safari, nu din Chrome.</span></div></div><div class="step"><div class="num">2</div><div><b>Apasă „Partajează”</b><span>Este pătratul cu săgeată în sus, din bara de jos (pe iPad, în bara de sus).</span></div></div><div class="step"><div class="num">3</div><div><b>Alege „Adaugă la ecranul de start”</b><span>Derulează lista în sus până o găsești, apoi apasă „Adaugă”.</span></div></div><div class="step"><div class="num">4</div><div><b>Pornește notificările (opțional)</b><span>Deschide aplicația de pe ecranul de start, apasă 🔔 și permite notificările. Pe iOS 16.4 sau mai nou funcționează și când aplicația e închisă.</span></div></div></div></div><div class="pane" id="p-windows"><div class="steps"><div class="step"><div class="num">1</div><div><b>Deschide aplicația în Chrome sau Edge</b><span>Intră pe adresa Pontaj Ture.</span></div></div><div class="step"><div class="num">2</div><div><b>Instalează</b><span>Chrome: iconița de instalare din bara de adrese sau meniul ⋮ → <i>Salvează și distribuie</i> → <i>Instalează Pontaj Ture</i>. Edge: meniul ⋯ → <i>Aplicații</i> → <i>Instalează acest site ca aplicație</i>.</span></div></div><div class="step"><div class="num">3</div><div><b>Pune-o pe desktop sau în bara de activități</b><span>Aplicația apare în meniul Start cu iconița ei; click dreapta → „Fixează în bara de activități”.</span></div></div><div class="step"><div class="num">4</div><div><b>Alternativ: pachetul pentru PC</b><span>Descarcă <b>Pontaj Ture.zip</b>, dezarhivează-l și deschide <b>Pontaj Ture.html</b>. Funcționează și fără internet. Pentru iconiță pe desktop folosește scurtătura <b>.url</b> de mai jos.</span></div></div></div></div><div class="pane" id="p-mac"><div class="steps"><div class="step"><div class="num">1</div><div><b>Safari (macOS Sonoma sau mai nou)</b><span>Deschide aplicația, apoi <b>Fișier → Adaugă în Dock…</b>. Apare ca aplicație separată.</span></div></div><div class="step"><div class="num">2</div><div><b>Chrome sau Edge</b><span>Meniul ⋮ → <i>Salvează și distribuie</i> → <i>Instalează Pontaj Ture</i>. Aplicația apare în Launchpad și în folderul Aplicații.</span></div></div><div class="step"><div class="num">3</div><div><b>Alternativ: pachetul pentru PC</b><span>Descarcă <b>Pontaj Ture.zip</b>, deschide-l și dă dublu clic pe <b>Pontaj Ture.html</b>. Pentru o scurtătură folosește fișierul <b>.webloc</b> de mai jos.</span></div></div></div></div><div class="pane" id="p-linux"><div class="steps"><div class="step"><div class="num">1</div><div><b>Chrome, Chromium sau Edge</b><span>Meniul ⋮ → <i>Salvează și distribuie</i> → <i>Instalează Pontaj Ture</i>. Aplicația apare în meniul de aplicații al distribuției.</span></div></div><div class="step"><div class="num">2</div><div><b>Firefox</b><span>Firefox nu instalează aplicații web pe desktop: pune pagina la favorite cu <kbd>Ctrl</kbd>+<kbd>D</kbd> sau trage iconița de lângă adresă pe desktop.</span></div></div><div class="step"><div class="num">3</div><div><b>Alternativ: pachetul pentru PC</b><span>Descarcă <b>Pontaj Ture.zip</b>, dezarhivează-l și deschide <b>Pontaj Ture.html</b> în browser. Pentru o scurtătură folosește fișierul <b>.desktop</b> de mai jos.</span></div></div></div></div>
+    <h2 class="section">Scurtături și pachete</h2>
+    <p class="lead">Dacă nu poți instala aplicația, descarcă o scurtătură care deschide Pontaj Ture dintr-un click.</p>
+    <div class="dl">
+      <button class="main" id="b-install" style="display:none">⬇ Instalează acum</button>
+      <button id="b-html">🔗 Scurtătură (.html)</button>
+      <button id="b-url">🪟 Windows (.url)</button>
+      <button id="b-webloc">🍎 Mac (.webloc)</button>
+      <button id="b-desktop">🐧 Linux (.desktop)</button>
+      <a href="Pontaj Ture.zip" download>💻 Pachet pentru PC (.zip)</a>
+    </div>
+    <p class="small">Scurtăturile duc la adresa de pe care ai deschis această pagină. Pachetul .zip se dezarhivează și se deschide cu <b>Pontaj Ture.html</b>.</p>
+    <footer><a href="index.html">← Înapoi la Pontaj Ture</a> · <a href="iphone.html">Notificări pe iPhone</a></footer>
+  </div>
+  <script>
+    (function () {
+      var ua = navigator.userAgent || '', plat = /iPad|iPhone|iPod/.test(ua) ? 'iphone' : /Android/.test(ua) ? 'android' : /Win/.test(ua) ? 'windows' : /Mac/.test(ua) ? 'mac' : 'linux';
+      var tabs = document.querySelectorAll('#tabs button');
+      function show(t) { tabs.forEach(function (b) { b.classList.toggle('on', b.dataset.t === t); }); document.querySelectorAll('.pane').forEach(function (p) { p.classList.toggle('on', p.id === 'p-' + t); }); }
+      tabs.forEach(function (b) { b.onclick = function () { show(b.dataset.t); }; });
+      show(plat);
+      var base = location.href.split('#')[0].split('?')[0].replace(/[^/]*$/, '') + 'index.html';
+      function save(name, mime, text) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: mime })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400); }
+      document.getElementById('b-html').onclick = function () {
+        fetch('icon.svg').then(function (r) { return r.text(); }).catch(function () { return ''; }).then(function (svg) {
+          var ic = svg ? 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))) : '';
+          save('Pontaj Ture.html', 'text/html', '<!DOCTYPE html><html lang="ro"><head><meta charset="utf-8"><title>Pontaj Ture</title>' + (ic ? '<link rel="icon" href="' + ic + '">' : '') + '<meta http-equiv="refresh" content="0;url=' + base + '"></head><body style="font-family:system-ui;text-align:center;padding:40px"><p>Se deschide Pontaj Ture… <a href="' + base + '">apasă aici</a> dacă nu se deschide.</p></body></html>');
+        });
+      };
+      document.getElementById('b-url').onclick = function () { save('Pontaj Ture.url', 'application/octet-stream', '[InternetShortcut]\r\nURL=' + base + '\r\n'); };
+      document.getElementById('b-webloc').onclick = function () { save('Pontaj Ture.webloc', 'application/xml', '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict><key>URL</key><string>' + base + '</string></dict></plist>\n'); };
+      document.getElementById('b-desktop').onclick = function () { save('Pontaj Ture.desktop', 'application/x-desktop', '[Desktop Entry]\nType=Link\nName=Pontaj Ture\nComment=Calendar de ture și pontaj\nURL=' + base + '\nIcon=' + base.replace(/index\.html$/, 'icon-512.png') + '\n'); };
+      var dp = null, bi = document.getElementById('b-install');
+      window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); dp = e; bi.style.display = ''; });
+      bi.onclick = function () { if (dp) { dp.prompt(); dp.userChoice.then(function () { dp = null; bi.style.display = 'none'; }); } };
+    })();
+  </script>
+</body>
+</html>

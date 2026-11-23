@@ -160,6 +160,42 @@
       '<p>Zilele de CO neefectuate pot fi reportate și luate în termen de 180 de zile de la finalul anului 2026. Compensarea în bani a zilelor neefectuate este strict interzisă prin lege, cu excepția încetării contractului de muncă.</p>'
     },
 
+    'concedii-co-cos-cm-mai': {
+      title: 'Concedii CO, COS, CM și specific MAI în ture — ghid practic',
+      html:
+      '<p>În munca în ture (12/24, 12/48, 3 schimburi sau ture continue), marcarea corectă a concediilor este esențială pentru a nu apărea erori la norma lunară, la orele suplimentare sau la sporurile aferente.</p>' +
+      '<table class="ot-table">' +
+      '<thead><tr><th>Cod / Tip</th><th>Ce reprezintă</th><th>Cum influențează programul / norma</th></tr></thead>' +
+      '<tbody>' +
+      '<tr><td><strong>CO</strong></td><td>Concediu de odihnă</td><td>Se raportează la zilele lucrătoare legale; „îngheață” turele planificate pe perioada concediului și diminuează norma de realizat.</td></tr>' +
+      '<tr><td><strong>COS</strong></td><td>Concediu de odihnă suplimentar</td><td>Zile suplimentare acordate peste CO de bază (în funcție de vechime, condiții de muncă/vătămări sau statut profesional); urmează aceeași logică de evidență a zilelor acordate.</td></tr>' +
+      '<tr><td><strong>CM</strong></td><td>Concediu medical</td><td>Acoperă incapacitatea temporară de muncă pe baza certificatului medical; zilele/orele aferente sunt justificate și se scad din norma de muncă.</td></tr>' +
+      '<tr><td><strong>MAI</strong></td><td>Reguli / concedii / învoiri specifice MAI</td><td>Aplicabile personalului MAI conform actelor normative și dispozițiilor interne (evidență separată a zilelor/orelor și compensărilor specifice).</td></tr>' +
+      '</tbody>' +
+      '</table>' +
+      '<h3>1. Concediul de odihnă (CO) și concediul suplimentar (COS)</h3>' +
+      '<ul>' +
+      '<li><strong>Baza de calcul:</strong> CO se acordă în zile lucrătoare, iar <strong>COS</strong> adaugă zile peste durata de bază acolo unde legea, contractul colectiv sau statutul profesional prevăd acest drept.</li>' +
+      '<li><strong>Repere orientative MAI / ANP:</strong> 32 zile CO (38 zile CO cu peste 10 ani vechime in campul muncii) + 5 zile COS, în funcție de încadrare, vechime și reglementările aplicabile.</li>' +
+      '<li><strong>În ture:</strong> Dacă ești în concediu pe o perioadă care cuprinde zile lucrătoare, nu mai contorizezi turele din grafic ca muncă obișnuită; la final de lună, norma efectivă de lucru se ajustează corespunzător.</li>' +
+      '<li><strong>Reportare și compensare:</strong> Zilele de CO/COS neefectuate se reportează în termenele legale și nu se compensează în bani decât la încetarea raporturilor de muncă/serviciu.</li>' +
+      '</ul>' +
+      '<h3>2. Concediul medical (CM)</h3>' +
+      '<ul>' +
+      '<li><strong>Evidență:</strong> Se marchează pe zilele calendaristice înscrise pe certificatul medical.</li>' +
+      '<li><strong>Impact asupra normei:</strong> Orele corespunzătoare zilelor de CM reduc norma lunară de ore de lucru, astfel încât să nu fii penalizat cu „minus” de ore doar pentru că ai fost în concediu medical.</li>' +
+      '</ul>' +
+      '<h3>3. Particularități pentru sistemul MAI</h3>' +
+      '<ul>' +
+      '<li><strong>Acte și proceduri interne:</strong> În MAI, evidența pontajului, a orelor suplimentare, a zilelor de repaus/sărbători și a categoriilor de concedii/învoiri respectă reglementările specifice ministerului și unității.</li>' +
+      '<li><strong>Verificare dublă:</strong> Compară mereu totalul din aplicație cu pontajul oficial al structurii/unității, mai ales când apar misiuni neprevăzute, ture peste program sau zile de recuperare.</li>' +
+      '</ul>' +
+      '<h3>Întrebări frecvente</h3>' +
+      '<details><summary>Cum diferă COS de CO în pontaj?</summary><p>CO este concediul anual de bază, iar COS reprezintă zilele suplimentare acordate peste acesta (de exemplu pentru condiții de muncă sau vechime/statut). În evidență se urmăresc separat soldurile rămase pentru fiecare.</p></details>' +
+      '<details><summary>CM-ul îmi scade orele de lucrat din luna respectivă?</summary><p>Da, zilele de concediu medical justificate prin certificat medical reduc norma de ore pe care trebuie să o efectuezi în luna respectivă.</p></details>' +
+      '<p class="ot-note">Informațiile au caracter orientativ și de organizare personală. Verifică mereu prevederile legale aplicabile și actele interne ale instituției/angajatorului tău.</p>'
+    },
+
     'ore-suplimentare': {
       title: 'Calculator ore suplimentare România 2026 — cum știi dacă ești în plus sau minus',
       html:

@@ -1,8 +1,8 @@
 {
-  "source": "Codul Muncii (Legea 53/2003, art. 120–123) și ghidurile Pontaj Ture (actualizat 2026)",
-  "updated": "2026-11-21",
+  "source": "Codul Muncii (Legea 53/2003, art. 120–123), Legea-cadru 153/2017 și actele MAI din 2025 — actualizat noiembrie 2026",
+  "updated": "2026-11-22",
   "title": "Ce legi se aplică pentru orele suplimentare?",
-  "intro": "Conform Codului Muncii din România (Legea 53/2003), munca suplimentară se compensează prin ore libere plătite în următoarele 90 de zile calendaristice sau, dacă nu este posibil, printr-un spor la salariu de minimum 75% din salariul de bază.",
+  "intro": "În sectorul privat (Codul Muncii), munca suplimentară se compensează prin ore libere plătite în următoarele 90 de zile calendaristice sau, dacă nu este posibil, printr-un spor de minimum 75% din salariul de bază. În sectorul bugetar (Legea 153/2017) compensarea cu timp liber se face de regulă în 60 de zile, iar în MAI orele ce nu se compensează în 90 de zile se plătesc, cu plafon anual de 180 de ore. Alege domeniul tău în „Legislație”.",
   "articles": [
     {
       "title": "Ture de lucru: tipuri de ture și cum îți calculezi orele",
@@ -39,6 +39,12 @@
       "desc": "Baza legală de 21 de zile lucrătoare, numărarea CO în schimburi și reportarea.",
       "target": "internal",
       "articleId": "concediu-ture"
+    },
+    {
+      "title": "Concedii CO, COS, CM și specific MAI în ture — ghid practic",
+      "desc": "Diferențele dintre CO, COS și CM, impactul asupra normei de ore și reguli specifice MAI.",
+      "target": "internal",
+      "articleId": "concedii-co-cos-cm-mai"
     },
     {
       "title": "Calculator ore suplimentare România 2026 — cum știi dacă ești în plus sau minus",

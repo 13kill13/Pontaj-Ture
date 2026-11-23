@@ -22,7 +22,7 @@ const HOLIDAY_CATEGORIES = (HOLIDAYS_DATA.categories && HOLIDAYS_DATA.categories
 ];
 // Zilele libere trăiesc și în state.holidaysData, ca să poată fi trimise în cloud
 // împreună cu celelalte setări. Datele înglobate sunt punctul de pornire când
-// rețeaua nu e disponibilă (cache-ul local nu generează niciodată erori alert()).
+// rețeaua nu e disponibilă (cache-ul local nu generează niciodată erori).
 function defaultHolidayState() {
   return {
     source: HOLIDAYS_DATA.source || 'zilelibere.com + Codul Muncii',
@@ -70,6 +70,69 @@ function normalizeHoliday(key, entry) {
 // O zi poate purta MAI MULTE sărbători/vacanțe. De exemplu 25 decembrie e în același
 // timp sărbătoare legală (SDSL) și în vacanța de iarnă. Le păstrăm pe toate, ca să se
 // poată suprapune peste zilele SDSL și peste ture, nu una în locul celeilalte.
+
+// ---------- Zile libere legale calculate (Codul Muncii art. 139 + Paștele ortodox) ----------
+// Funcționează pentru ORICE an, offline, ca să nu rămână niciodată un an gol (ex. 2027).
+// Datele din Nager.Date / setul înglobat au prioritate: se adaugă doar zilele care lipsesc.
+function orthodoxEaster(y) {
+  const a = y % 4, b = y % 7, c = y % 19, d = (19 * c + 15) % 30, e = (2 * a + 4 * b - d + 34) % 7;
+  const month = Math.floor((d + e + 114) / 31), day = ((d + e + 114) % 31) + 1;
+  const dt = new Date(y, month - 1, day + 13);   // iulian → gregorian (1900–2099)
+  return dt;
+}
+function computedLegalDays(y) {
+  const out = {};
+  const put = (dt, name) => { out[`${dt.getFullYear()}-${dt.getMonth() + 1}-${dt.getDate()}`] = name; };
+  const fx = (mo, d, name) => put(new Date(y, mo - 1, d), name);
+  fx(1,1,'Anul Nou'); fx(1,2,'Anul Nou'); fx(1,6,'Boboteaza'); fx(1,7,'Sf. Ioan');
+  fx(1,24,'Unirea Principatelor'); fx(5,1,'Ziua Muncii'); fx(6,1,'Ziua Copilului');
+  fx(8,15,'Adormirea Maicii Domnului'); fx(11,30,'Sf. Andrei'); fx(12,1,'Ziua Națională');
+  fx(12,25,'Crăciun'); fx(12,26,'Crăciun');
+  const e = orthodoxEaster(y), off = n => new Date(e.getFullYear(), e.getMonth(), e.getDate() + n);
+  put(off(-2), 'Vinerea Mare'); put(off(0), 'Paște'); put(off(1), 'Paște (a doua zi)');
+  put(off(49), 'Rusalii'); put(off(50), 'Rusalii (a doua zi)');
+  return out;
+}
+function gregorianEaster(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, month - 1, day);
+}
+// Sărbători religioase din România (NU sunt zile libere legale — se lucrează normal, dacă nu e prevăzut altfel).
+function computedReligiousDays(y) {
+  const out = {};
+  const put = (dt, name) => { out[`${dt.getFullYear()}-${dt.getMonth() + 1}-${dt.getDate()}`] = name; };
+  const fx = (mo, d, name) => put(new Date(y, mo - 1, d), name);
+  fx(1,30,'Sf. Trei Ierarhi'); fx(2,2,'Întâmpinarea Domnului'); fx(3,25,'Buna Vestire'); fx(4,23,'Sf. Gheorghe');
+  fx(5,21,'Sf. Constantin și Elena'); fx(6,24,'Nașterea Sf. Ioan Botezătorul'); fx(6,29,'Sf. Petru și Pavel');
+  fx(7,20,'Sf. Ilie'); fx(8,6,'Schimbarea la Față'); fx(9,8,'Nașterea Maicii Domnului'); fx(9,14,'Înălțarea Sfintei Cruci');
+  fx(10,14,'Sf. Cuv. Parascheva'); fx(10,26,'Sf. Dimitrie'); fx(11,8,'Soborul Sf. Mihail și Gavriil');
+  fx(11,21,'Intrarea Maicii Domnului în Biserică'); fx(12,6,'Sf. Nicolae'); fx(12,20,'Ignatul'); fx(12,27,'Sf. Ștefan');
+  const e = orthodoxEaster(y), off = n => new Date(e.getFullYear(), e.getMonth(), e.getDate() + n);
+  put(off(-7), 'Duminica Floriilor'); put(off(-3), 'Joia Mare'); put(off(-1), 'Sâmbăta Mare');
+  put(off(39), 'Înălțarea Domnului (Ziua Eroilor)');
+  const ge = gregorianEaster(y);
+  if (ge.getTime() !== e.getTime()) put(ge, 'Paștele catolic / greco-catolic');
+  return out;
+}
+function addComputedLegal(map) {
+  const now = new Date().getFullYear();
+  for (let y = now - 2; y <= now + 5; y++) {
+    const days = computedLegalDays(y);
+    Object.keys(days).forEach(k => {
+      const arr = map[k] || (map[k] = []);
+      if (!arr.some(x => x.cat === 'legal')) arr.push({ name: days[k], cat: 'legal' });
+    });
+    const rel = computedReligiousDays(y);
+    Object.keys(rel).forEach(k => {
+      const arr = map[k] || (map[k] = []);
+      if (!arr.some(x => x.cat === 'legal' || x.cat === 'religios')) arr.push({ name: rel[k], cat: 'religios' });
+    });
+  }
+}
+
 const HOLIDAYS = (function () {
   const map = {};
   const push = (k, entry) => {
@@ -93,6 +156,7 @@ const HOLIDAYS = (function () {
       if (d > dim) { d = 1; m++; if (m > 11) { m = 0; y++; } }
     }
   });
+  addComputedLegal(map);
   return map;
 })();
 // Întotdeauna o LISTĂ (golă când ziua nu are sărbătoare), ca vacanțele să se poată
@@ -139,6 +203,7 @@ function applyHolidayData(data, quiet) {
       if (d > dim) { d = 1; m++; if (m > 11) { m = 0; y++; } }
     }
   });
+  addComputedLegal(HOLIDAYS);
   rebuildLegalMap();
   if (data.source) HOLIDAYS_DATA.source = data.source;
   if (data.updated) HOLIDAYS_DATA.updated = data.updated;
@@ -156,15 +221,23 @@ try {
 } catch (e) { /* ignore a corrupt holiday cache */ }
 
 const PATTERNS = {
+  // — ture de 12 / 24 ore (convenția aplicației: Z 14h, N 13h pontate; editabile în Setări → Calcul)
   '12/24-12/48': { zile:['Z','N','L','L'] },
   '12/24':       { zile:['Z','L','N','L'] },
   '12/24-24/72': { zile:['Z','N','L','L','L','L'] },
-  '8/3-dimineata':{ zile:['Z','Z','Z','Z','Z','L','L'] },
-  '8/3-dupaamiaza':{ zile:['N','N','N','N','N','L','L'] },
-  '8/3-noapte':  { zile:['N','N','N','N','N','L','L'] },
-  '8/3-rotativ': { zile:['Z','Z','Z','Z','Z','N','N','N','N','N','N','N','N','N','N','L','L','L','L','L','L'] },
   '24/48':       { zile:['Z','L','L'] },
   '24/72':       { zile:['Z','L','L','L'] },
+  // — 12 ore reale (07–19 / 19–07)
+  '12h-zi-noapte-2L':   { zile:['Z12','N12','L','L'] },
+  '12h-2zi-2noapte-4L': { zile:['Z12','Z12','N12','N12','L','L','L','L'] },
+  '12/48':              { zile:['Z12','L','L'] },
+  // — 8 ore
+  '8/5-birou':          { zile:['B8','B8','B8','B8','B8','L','L'] },
+  '8/3-dimineata':      { zile:['S1','S1','S1','S1','S1','L','L'] },
+  '8/3-dupaamiaza':     { zile:['S2','S2','S2','S2','S2','L','L'] },
+  '8/3-noapte':         { zile:['S3','S3','S3','S3','S3','L','L'] },
+  '8/3-rotativ':        { zile:['S1','S1','S1','S1','S1','L','L','S2','S2','S2','S2','S2','L','L','S3','S3','S3','S3','S3','L','L'] },
+  '8/3-continuu-4zile': { zile:['S1','S1','S2','S2','S3','S3','L','L'] },
 };
 
 // The person asked to be able to create, generate and edit "Tipul de tură".
@@ -231,7 +304,7 @@ function contrastColor(hex) {
 }
 function defaultCategories() {
   return [
-    { name:'Ture', cls:'zi' }, { name:'TureZ', cls:'zi' },
+    { name:'Ture', cls:'zi' }, { name:'TureZ', cls:'zi' }, { name:'Ture de 8 ore', cls:'zi' }, { name:'Ture de 12 ore', cls:'noapte' },
     { name:'Concedii', cls:'co' },
     { name:'COS', cls:'cos' }, { name:'Sărbători', cls:'ort' }, { name:'Altele', cls:'rec' },
   ];
@@ -239,6 +312,8 @@ function defaultCategories() {
 function refreshTypeClasses(c) {
   (c.types || []).forEach(t => {
     const cat = (c.categories || []).find(x => x.name === t.category);
+    // Turele de bază își păstrează culoarea proprie (N închis, P albastru…) cât timp culoarea categoriei nu a fost schimbată.
+    if (t.builtin && cat && cat.cls === CATEGORY_CLS[t.category]) return;
     if (cat && cat.cls) t.cls = cat.cls;
     else if (CATEGORY_CLS[t.category]) t.cls = CATEGORY_CLS[t.category];
   });
@@ -318,6 +393,19 @@ function builtinTypes() {
     { id:'Cont', name:'Continuitate',  code:'Cont.',hours:12, group:'shift', builtin:true, cls:'cont',   category:TURE_CATEGORY },
     { id:'Psih', name:'Psihologic',    code:'Psih', hours:8,  group:'shift', builtin:true, cls:'psih',   category:TURE_CATEGORY },
     // „Sârbătoare” apare ca paletă în site-ul de referință (categorie separată, 0h).
+    // Ture cu orele reale ale programului (8h / 12h), pentru birou, 3 schimburi și ture de 12 ore.
+    { id:'B8', name:'Birou 8h', code:'B8', hours:8, group:'shift', builtin:true, cls:'zi', category:'Ture de 8 ore',
+      clock:{start:'08:00',end:'16:00',split:false}, breakMin:0, skipNonWorking:true },
+    { id:'S1', name:'Dimineață 06–14', code:'S1', hours:8, group:'shift', builtin:true, cls:'zi', category:'Ture de 8 ore',
+      clock:{start:'06:00',end:'14:00',split:false}, breakMin:0 },
+    { id:'S2', name:'După-amiază 14–22', code:'S2', hours:8, group:'shift', builtin:true, cls:'preg', category:'Ture de 8 ore',
+      clock:{start:'14:00',end:'22:00',split:false}, breakMin:0 },
+    { id:'S3', name:'Noapte 22–06', code:'S3', hours:8, group:'shift', builtin:true, cls:'noapte', category:'Ture de 8 ore',
+      clock:{start:'22:00',end:'06:00',split:false}, breakMin:0 },
+    { id:'Z12', name:'Zi 12h 07–19', code:'Z12', hours:12, group:'shift', builtin:true, cls:'zi', category:'Ture de 12 ore',
+      clock:{start:'07:00',end:'19:00',split:false}, breakMin:0 },
+    { id:'N12', name:'Noapte 12h 19–07', code:'N12', hours:12, group:'shift', builtin:true, cls:'noapte', category:'Ture de 12 ore',
+      clock:{start:'19:00',end:'07:00',split:false}, breakMin:0 },
     { id:'Sarb', name:'Sărbătoare',   code:'Săr',  hours:0,  group:'shift', builtin:true, cls:'ort',    category:'Sărbători' },
     // „TureZ” — altă categorie pentru TureZ(Zi), N(Noapte), L(Liber), R(Recuperare), P(Pregatire), Cont.(Continuitate), Psih(Psihologic).
     { id:'TZ_TureZ', name:'TureZ',       code:'TureZ', hours:14, group:'shift', builtin:true, cls:'zi',     category:TUREZ_CATEGORY,
@@ -353,7 +441,7 @@ function menuOpen(id) {
     const m = JSON.parse(localStorage.getItem(MENU_STORAGE) || '{}');
     if (typeof m[id] === 'boolean') return m[id];
   } catch (e) {}
-  return true;
+  return false;
 }
 function applyMenuOpen(id, open) {
   const head = document.querySelector(`[data-menu-id="${id}"]`);
@@ -377,17 +465,16 @@ function toggleMenu(id) {
   if (id === 'overtime') ui.overtimeClosed = !open;
 }
 function initMenus() {
+  // La deschiderea paginii toate categoriile sunt restrânse; calendarul rămâne în prim-plan.
+  try { localStorage.removeItem(MENU_STORAGE); } catch (e) {}
   document.querySelectorAll('[data-menu-id]').forEach(h => {
-    applyMenuOpen(h.dataset.menuId, menuOpen(h.dataset.menuId));
+    applyMenuOpen(h.dataset.menuId, false);
     h.onclick = () => toggleMenu(h.dataset.menuId);
   });
 }
 // Deschide meniul overtime-laws automat când există ore suplimentare (ore plus > 0).
 function syncOvertimeLaws(total) {
-  if (Number(total) > 0 && !ui.overtimeClosed) {
-    const head = document.querySelector('[data-menu-id="overtime"]');
-    if (head && head.getAttribute('aria-expanded') !== 'true') applyMenuOpen('overtime', true);
-  }
+  // Meniurile rămân restrânse până le deschizi tu; doar resetăm starea.
   if (Number(total) <= 0) ui.overtimeClosed = false;
 }
 
@@ -454,6 +541,12 @@ function normalizeCalendar(c) {
     if (!c.assignments[k].length) delete c.assignments[k];
   });
   c.types = (c.types || []).map(t => ({ category:'Altele', ...t }));
+  // Turele de bază adăugate în versiuni noi apar și în calendarele salvate mai demult.
+  builtinTypes().forEach(b => { if (!c.types.some(t => t.id === b.id)) c.types.push(b); });
+  if (!c.prevOverride) c.prevOverride = {};
+  if (!c.prevPinned) c.prevPinned = {};
+  if (!c.chosenVariant) c.chosenVariant = {};
+  if (!c.salary) c.salary = { brut:'', dep:0, sub26:false, pNoapte:25, pExtra:75, pWeekend:50, pLegal:100, platite:false };
   c.patternTypes = (c.patternTypes || []).filter(p => p && p.id && Array.isArray(p.zile) && p.zile.length);
   if (c.keepExisting == null) c.keepExisting = true;
   if (c.currency == null) c.currency = (APK_MECHANICS && APK_MECHANICS.settings && APK_MECHANICS.settings.tipoMoneda) || '€';
@@ -559,6 +652,10 @@ function carryRec(c, y, m) {
 }
 // What a month shows as "rămase din luna trecută": the previous month's carry-out.
 function carryIn(c, y, m) {
+  // Editarea manuală („dacă vin cu X ore din urmă”) are prioritate; butonul Auto o șterge.
+  c.prevOverride = c.prevOverride || {};
+  const ov = c.prevOverride[monthKey(y, m)];
+  if (ov != null && ov !== '' && !isNaN(Number(ov))) return round2(Number(ov));
   const [py, pm] = prevMonth(y, m);
   return round2(carryRec(c, py, pm).v);
 }
@@ -570,7 +667,7 @@ function getNorma(year, month) {
   const days = daysInMonth(year, month);
   for (let d = 1; d <= days; d++) {
     const dow = new Date(year, month, d).getDay();
-    if (dow !== 0 && dow !== 6) wd++;
+    if (dow !== 0 && dow !== 6 && !holidaysFor(year, month, d).some(h => h.cat === 'legal')) wd++;
   }
   return wd * 8;
 }
@@ -674,8 +771,8 @@ function addCategory() {
   const c = cal();
   const inp = document.getElementById('cat-new-name');
   const name = (inp.value || '').trim();
-  if (!name) { alert('Scrie numele categoriei noi.'); return; }
-  if (c.categories.some(x => x.name === name)) { alert('Există deja o categorie cu acest nume.'); return; }
+  if (!name) { uiAlert('Scrie numele categoriei noi.'); return; }
+  if (c.categories.some(x => x.name === name)) { uiAlert('Există deja o categorie cu acest nume.'); return; }
   c.categories.push({ name, cls: document.getElementById('cat-new-color').value || 'rec' });
   inp.value = '';
   saveState(); renderAll();
@@ -686,16 +783,16 @@ function renameCategory(i, newName) {
   const old = cat.name;
   if (old === newName) return;
   if (c.categories.some((x, j) => j !== i && x.name === newName)) {
-    alert('Există deja o categorie cu acest nume.'); renderCategoryPanel(); return;
+    uiAlert('Există deja o categorie cu acest nume.'); renderCategoryPanel(); return;
   }
   cat.name = newName;
   c.types.forEach(t => { if (t.category === old) t.category = newName; });
   saveState(); renderAll();
 }
-function deleteCategory(i) {
+async function deleteCategory(i) {
   const c = cal(), cat = c.categories[i];
   if (!cat) return;
-  if (!confirm(`Ștergi categoria „${cat.name}"? Turele ei vor trece la „Altele".`)) return;
+  if (!(await uiConfirm(`Ștergi categoria „${cat.name}”? Turele ei vor trece la „Altele”.`, 'Șterge'))) return;
   c.types.forEach(t => { if (t.category === cat.name) { t.category = 'Altele'; t.cls = 'rec'; } });
   c.categories.splice(i, 1);
   if (!c.categories.some(x => x.name === 'Altele')) c.categories.push({ name:'Altele', cls:'rec' });
@@ -730,7 +827,7 @@ function renderCalendar() {
   const firstDay = new Date(y, m, 1).getDay();
   const offset = firstDay === 0 ? 6 : firstDay - 1;
   const days = daysInMonth(y, m);
-  const names = ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
+  const names = ({ en:['Mo','Tu','We','Th','Fr','Sa','Su'], es:['Lu','Ma','Mi','Ju','Vi','Sá','Do'] })[c.language] || ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
   let html = names.map((n, i) => `<div class="cal-day-name${i >= 5 ? ' weekend' : ''}">${n}</div>`).join('');
   for (let i = 0; i < offset; i++) html += '<div class="day empty"></div>';
 
@@ -1013,6 +1110,16 @@ function effectiveDayInfo(c, y, m, d) {
 // Ex. Noapte 20:00→09:00 (13h) → { zi:240, ziuaUrmătoare:540 } minute.
 // Pauza (timpul de repaus) se scade proporțional, ca în MECHANICS.shiftMinutes.
 function shiftMinutesByDate(t, y, m, d) {
+  const out = shiftMinutesByDateRaw(t, y, m, d);
+  if (t && t.skipNonWorking) {
+    Object.keys(out).forEach(k => {
+      const p = k.split('-').map(Number);
+      if (isSdslDate(new Date(p[0], p[1] - 1, p[2]))) delete out[k];
+    });
+  }
+  return out;
+}
+function shiftMinutesByDateRaw(t, y, m, d) {
   const out = {};
   const add = (yy, mm, dd, min) => {
     if (min <= 0) return;
@@ -1066,10 +1173,14 @@ function dayWorkMinutes(c, y, m, d) {
     const t = typeById(c, id);
     return t && t.group === 'leave';
   });
-  // Când ziua este marcată cu concediu (CO / CM / COS), orele acelei zile nu
-  // se adună (înlocuiesc ziua de lucru), indiferent dacă e zi lucrătoare,
-  // weekend sau sărbătoare legală, și păstrând orice număr de ore al turei.
-  if (hasLeave) return 0;
+  // Ziua marcată cu concediu (CO / CM / COS) înlocuiește tura și se numără cu 8 h doar în zile lucrătoare.
+  if (hasLeave) {
+    // Concediu (CO / COS / CM): în zilele lucrătoare se ia în calcul cu orele turei de concediu (8 h);
+    // în weekend și în sărbători legale nu se adaugă nimic.
+    if (isSdslDate(new Date(y, m, d))) return 0;
+    const lt = ids.map(id => typeById(c, id)).filter(t => t && t.group === 'leave').pop();
+    return Math.max(0, (lt && Number(lt.hours) > 0) ? Number(lt.hours) : 8) * 60;
+  }
 
   const prev = new Date(y, m, d - 1);
   const py = prev.getFullYear(), pm = prev.getMonth(), pd = prev.getDate();
@@ -1406,6 +1517,7 @@ function renderCalc() {
   const prev = carryIn(c, c.year, c.month);             // din luna anterioară (folosit doar la calculul turelor libere)
   const total = round2(baza + prev);                    // Total ore plus (pentru ture libere / report)
   syncOvertimeLaws(total);
+  ui.lastPlan = null; ui.lastRows = null;
   const rec = carryRec(c, c.year, c.month);
 
   document.getElementById('ore-lucrate').textContent = fmtHours(m.total);
@@ -1415,10 +1527,9 @@ function renderCalc() {
   ex.style.color = monthOnlyDelta >= 0 ? '#1D9E75' : '#e53e3e';
 
   const prevField = document.getElementById('extra-prev');
-  if (prevField) {
-    prevField.value = prev;
-    prevField.title = `Se completează automat din ${monthKey(...prevMonth(c.year, c.month))} („Ore suplimentare pentru luna viitoare").`;
-  }
+  if (prevField && document.activeElement !== prevField) prevField.value = prev;
+  const prevMode = document.getElementById('prev-mode');
+  if (prevMode) prevMode.textContent = ((c.prevOverride || {})[monthKey(c.year, c.month)] != null) ? '✎ editat manual' : '↻ automat din luna trecută';
   document.getElementById('day-hours').value = c.dayHours;
   document.getElementById('night-hours').value = c.nightHours;
   const nextField = document.getElementById('extra-next');
@@ -1457,7 +1568,20 @@ function renderCalc() {
       ? `<div class="line"><span>Venit estimat (${escapeHtml(c.currency || '€')}${c.incomePerHour}/h)</span><span>${escapeHtml(c.currency || '€')}${Math.round(Math.max(0, total / 2) * Number(c.incomePerHour) * 100) / 100}</span></div>`
       : '');
 
-  const selected = ui.selectedPoss != null ? Number(ui.selectedPoss) : (rec.manual ? null : (best < 0 ? 0 : best));
+  // Varianta aleasă se ține minte pe lună (după structura ei), ca să nu se piardă la o reîncărcare sau sincronizare.
+  const vSig = r => r.z + '-' + r.n;
+  const chosenSig = (c.chosenVariant || {})[monthKey(c.year, c.month)];
+  const chosenIdx = chosenSig ? rows.findIndex(r => vSig(r) === chosenSig) : -1;
+  const selected = ui.selectedPoss != null ? Number(ui.selectedPoss) : (chosenIdx >= 0 ? chosenIdx : (rec.manual ? null : (best < 0 ? 0 : best)));
+  ui.lastRows = rows.map((r, i) => ({ r, s: splits[i], best: i === best, selected: selected === i }));
+  ui.pickVariant = (i) => {
+    const s2 = splits[i]; if (!s2) return;
+    ui.selectedPoss = Number(i);
+    c.chosenVariant = c.chosenVariant || {}; c.chosenVariant[monthKey(c.year, c.month)] = vSig(rows[i]);
+    if (!rec.pinned) { rec.v = round2(s2.reportNext); rec.manual = false; }   // orele reținute nu se suprascriu
+    saveState(); renderAll();
+  };
+  ui.lastPlan = (selected != null && selected >= 0 && splits[selected]) ? Object.assign({ total, baza, prev }, splits[selected]) : null;
   const sw = (n, one, many) => n ? `${n} ${n === 1 ? one : many}` : '';
 
   poss.innerHTML = rows.map((r, i) => {
@@ -1488,11 +1612,7 @@ function renderCalc() {
 
   poss.querySelectorAll('.possibility').forEach(el => {
     el.style.cursor = 'pointer';
-    el.onclick = () => {
-      ui.selectedPoss = Number(el.dataset.i);
-      rec.v = round2(el.dataset.leftover); rec.manual = false;
-      saveState(); renderAll();
-    };
+    el.onclick = () => ui.pickVariant(Number(el.dataset.i));
   });
 
   if (!rec.manual && selected >= 0 && splits[selected] && rec.v !== splits[selected].reportNext) {
@@ -1607,7 +1727,7 @@ function savePattern(i) {
   const row = document.querySelector(`.pattern-row[data-patrow="${i}"]`);
   const name = row ? (row.querySelector('.pat-name').value || '').trim() : p.name;
   const zile = row ? parseSequence(row.querySelector('.pat-seq').value) : p.zile;
-  if (!name || !zile.length) { alert('Scrie denumirea și secvența (ex: Z N L L).'); return; }
+  if (!name || !zile.length) { uiAlert('Scrie denumirea și secvența (ex: Z N L L).'); return; }
   if (p.builtin) { duplicatePattern(i, name, zile); return; }
   const stored = c.patternTypes.find(x => x.id === p.id);
   if (stored) { stored.name = name; stored.zile = zile; }
@@ -1624,10 +1744,10 @@ function duplicatePattern(i, nameOverride, seqOverride) {
   c.patternTypes.push(pt); c.pattern = pt.id;
   saveState(); renderAll();
 }
-function deletePattern(i) {
+async function deletePattern(i) {
   const c = cal(), p = allPatterns(c)[i];
   if (!p || p.builtin) return;
-  if (!confirm(`Ștergi tipul de tură „${p.name}"?`)) return;
+  if (!(await uiConfirm(`Ștergi tipul de tură „${p.name}”?`, 'Șterge'))) return;
   c.patternTypes = c.patternTypes.filter(x => x.id !== p.id);
   if (c.pattern === p.id) c.pattern = 'custom';
   saveState(); renderAll();
@@ -2281,15 +2401,15 @@ function setAccountStatus(text, kind) {
 async function doAccountLogin() {
   const email = document.getElementById('account-email').value.trim();
   const pass = document.getElementById('account-pass').value;
-  if (!email || !pass) return alert('Completează e-mailul și parola.');
+  if (!email || !pass) return uiAlert('Completează e-mailul și parola.');
   if (navigator.onLine === false) { markCloudPending(); return; }
-  if (!supabaseClient) return alert('Librăria Supabase nu s-a putut încărca. Verifică conexiunea la internet și reîncarcă pagina.');
+  if (!supabaseClient) return uiAlert('Librăria Supabase nu s-a putut încărca. Verifică conexiunea la internet și reîncarcă pagina.');
 
   let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
   if (error) {
     let signUpRes = await supabaseClient.auth.signUp({ email, password: pass });
     if (signUpRes.error) {
-      alert('Eroare: ' + signUpRes.error.message);
+      uiAlert('Eroare: ' + signUpRes.error.message);
       setAccountStatus('⚠ ' + signUpRes.error.message, 'err');
       return;
     }
@@ -2300,7 +2420,7 @@ async function doAccountLogin() {
     renderAccountButton();
     updateAccountExtras();
     await loadDataFromSupabase(currentUser.id);
-    alert('Autentificat cu succes!');
+    uiAlert('Autentificat cu succes!');
     setAccountStatus(`✓ Autentificat ca ${currentUser.email}. Datele se sincronizează automat cu Supabase.`, 'ok');
     await refreshSyncCode();
   }
@@ -2366,7 +2486,7 @@ async function doAccountSetNewPassword() {
   await setAccountPassword('account-recovery-pass');
 }
 async function doAccountSync() {
-  if (!currentUser) { alert('Loghează-te mai întâi.'); return; }
+  if (!currentUser) { uiAlert('Loghează-te mai întâi.'); return; }
   if (navigator.onLine === false) { markCloudPending(); return; }
   setAccountStatus('↻ Se sincronizează cu Supabase…');
   await loadDataFromSupabase(currentUser.id);
@@ -2979,8 +3099,8 @@ function copyShareLink() {
     const b = document.getElementById('copy-btn-text');
     if (b) { b.textContent = '✓ Link copiat!'; setTimeout(() => { b.textContent = 'Copiază linkul'; }, 2500); }
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(() => prompt('Copiază linkul:', url));
-  else prompt('Copiază linkul:', url);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(() => uiPrompt('Copiază linkul', url, 'Gata'));
+  else uiPrompt('Copiază linkul', url, 'Gata');
 }
 
 const GAME_QUESTIONS = [
@@ -3051,22 +3171,22 @@ function bindEvents() {
     state.activeId = e.target.value; ui.selectedPoss = null; ui.selectedFree = null; closeShiftForm();
     saveState(); renderAll();
   };
-  document.getElementById('cal-new').onclick = () => {
-    const name = prompt('Numele noului calendar:', 'Calendar nou');
+  document.getElementById('cal-new').onclick = async () => {
+    const name = await uiPrompt('Numele noului calendar', 'Calendar nou', 'Creează');
     if (!name) return;
     const c = makeCalendar(name.trim());
     state.calendars.push(c); state.activeId = c.id;
     saveState(); renderAll();
   };
-  document.getElementById('cal-rename').onclick = () => {
+  document.getElementById('cal-rename').onclick = async () => {
     const c = cal();
-    const name = prompt('Numele calendarului:', c.name);
+    const name = await uiPrompt('Numele calendarului', c.name, 'Salvează');
     if (!name || !name.trim()) return;
     c.name = name.trim(); saveState(); renderAll();
   };
-  document.getElementById('cal-delete').onclick = () => {
-    if (state.calendars.length === 1) { alert('Trebuie să rămână cel puțin un calendar.'); return; }
-    if (!confirm(`Ștergi calendarul „${cal().name}"?`)) return;
+  document.getElementById('cal-delete').onclick = async () => {
+    if (state.calendars.length === 1) { uiAlert('Trebuie să rămână cel puțin un calendar.'); return; }
+    if (!(await uiConfirm(`Ștergi calendarul „${cal().name}”? Turele lui se pierd.`, 'Șterge'))) return;
     state.calendars = state.calendars.filter(x => x.id !== state.activeId);
     state.activeId = state.calendars[0].id;
     saveState(); renderAll();
@@ -3089,10 +3209,10 @@ function bindEvents() {
   document.getElementById('custom-zi-hours').oninput = () => { setTypeHours('Z', 'custom-zi-hours', 14); };
   document.getElementById('custom-noapte-hours').oninput = () => { setTypeHours('N', 'custom-noapte-hours', 13); };
 
-  document.getElementById('btn-apply').onclick = () => { ui.paint = !ui.paint; renderPaintState(); autoOpenMenus(['gen', 'cat']); };
+  document.getElementById('btn-apply').onclick = () => { ui.paint = !ui.paint; renderPaintState(); };
   document.getElementById('gen-pattern').onclick = generatePattern;
-  document.getElementById('btn-clear-all').onclick = () => {
-    if (!confirm('Ștergi toate turele și concediile marcate în acest calendar?')) return;
+  document.getElementById('btn-clear-all').onclick = async () => {
+    if (!(await uiConfirm('Ștergi toate turele și concediile marcate în acest calendar?', 'Șterge tot'))) return;
     cal().assignments = {}; saveState(); renderAll();
   };
 
@@ -3162,7 +3282,7 @@ function bindEvents() {
 
   // „Rămase din luna trecută” este OBLIGATORIU derivat din luna anterioară.
   const prevField = document.getElementById('extra-prev');
-  if (prevField) { prevField.readOnly = true; }
+  if (prevField) { prevField.readOnly = false; }
   const autoBox = document.getElementById('auto-extra');
   if (autoBox) autoBox.style.display = 'none';
   document.getElementById('day-hours').oninput = e => {
@@ -3191,7 +3311,7 @@ function bindEvents() {
   const carryReset = document.getElementById('carry-reset');
   if (carryReset) carryReset.onclick = () => {
     const c = cal(), rec = carryRec(c, c.year, c.month);
-    rec.manual = false; ui.selectedPoss = null; saveState(); renderAll();
+    rec.manual = false; rec.pinned = false; ui.selectedPoss = null; saveState(); renderAll();
   };
 
   // --- Tura nouă: buton retractabil — o apăsare deschide, următoarea ascunde din nou ---
@@ -3288,13 +3408,13 @@ function saveShiftForm() {
   const en  = document.getElementById('f-end').value;
   const st2 = document.getElementById('f-start2').value;
   const en2 = document.getElementById('f-end2').value;
-  if (!name) { alert('Scrie denumirea turei.'); return; }
+  if (!name) { uiAlert('Scrie denumirea turei.'); return; }
   const auto = cal().autoCalc !== false;
   const hasClock = auto && !!(st && en && st !== en);
   const hours = hasClock
     ? MECHANICS.shiftHours({ hours:null, clock:{ start:st, end:en, start2:st2, end2:en2, split: !!(st2 && en2) }, breakMin })
     : Number(hoursIn);
-  if (isNaN(hours) || hours < 0 || hours > 24) { alert('Orele trebuie să fie între 0 și 24.'); return; }
+  if (isNaN(hours) || hours < 0 || hours > 24) { uiAlert('Orele trebuie să fie între 0 și 24.'); return; }
 
   const chosenCat = c.categories.find(x => x.name === category);
   const useColor = !!document.getElementById('f-use-color').checked;
@@ -3306,6 +3426,7 @@ function saveShiftForm() {
     fg: useColor ? contrastColor(hex) : null,
     breakMin,
     clock: hasClock ? { start:st, end:en, start2:st2, end2:en2, split: !!(st2 && en2) } : null,
+    skipNonWorking: !!(document.getElementById('f-skip-nonwork') || {}).checked,
   };
 
   if (ui.formMode === 'edit' && ui.editing) {
@@ -3318,12 +3439,12 @@ function saveShiftForm() {
   closeShiftForm(); saveState(); renderAll();
 }
 
-function deleteShift() {
+async function deleteShift() {
   if (ui.formMode !== 'edit' || !ui.editing) return;
   const c = cal(), t = c.types.find(x => x.id === ui.editing);
   if (!t) return;
-  if (t.builtin) { alert('Turele de bază nu se pot șterge, dar le poți edita.'); return; }
-  if (!confirm(`Ștergi tura „${t.name}"?`)) return;
+  if (t.builtin) { uiAlert('Turele de bază nu se pot șterge, dar le poți edita.'); return; }
+  if (!(await uiConfirm(`Ștergi tura „${t.name}”?`, 'Șterge'))) return;
   c.types = c.types.filter(x => x.id !== t.id);
   Object.keys(c.assignments).forEach(k => {
     c.assignments[k] = (c.assignments[k] || []).filter(id => id !== t.id);
@@ -3346,6 +3467,7 @@ function openEditor(id) {
   document.getElementById('f-code').value = t.code;
   document.getElementById('f-hours').value = MECHANICS.shiftHours(t);
   document.getElementById('f-break').value = t.breakMin || 0;
+  const sk = document.getElementById('f-skip-nonwork'); if (sk) sk.checked = !!t.skipNonWorking;
   document.getElementById('f-use-color').checked = !!t.bg;
   document.getElementById('f-color').value = t.bg || '#E6F1FB';
   const ck = t.clock || {};
@@ -3358,6 +3480,8 @@ function openEditor(id) {
   const btn = document.getElementById('btn-new-shift');
   if (btn) { btn.setAttribute('aria-expanded', 'true'); btn.textContent = '▾ − Tura nouă (ascunde)'; }
   updateFormHint();
+  autoOpenMenus(['gen', 'cat']);
+  if (window.goToSection) setTimeout(() => window.goToSection('shift-form'), 60);
 }
 function closeShiftForm() {
   ui.formMode = null; ui.editing = null;

@@ -1,28 +1,30 @@
 <!DOCTYPE html>
-<html lang="ro" data-theme="light">
+<html lang="ro">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Calculator Salariu Net — cu Sporuri de Tură | Pontaj Ture</title>
   <meta name="description" content="Calculează rapid salariul net din brut, pe luna și anul alese, cu sporuri de noapte, SDSL (weekend + zile libere legale), ore suplimentare și alte sporuri adăugate de tine. Gratuit, fără înregistrare." />
   <link rel="canonical" href="calculator-salariu.html" />
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <style>
-    body { background:#f5f5f5; }
-    .wrap { background:#fff; }
+    body { background:var(--bg-page); color:var(--text-main); padding:0; }
+    .wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:18px; max-width:760px; margin:18px auto; padding:18px 18px 28px; box-shadow:0 1px 0 var(--shadow); }
     .breadcrumb { font-size:13px; color:#1D9E75; margin-bottom:1rem; }
     .breadcrumb a { color:#1D9E75; text-decoration:none; }
-    h1 { font-size:22px; font-weight:600; color:#1a1a1a; margin:0 0 8px; }
-    h2 { font-size:17px; font-weight:600; color:#1a1a1a; margin:1.6rem 0 8px; }
-    p { font-size:14px; color:#666; line-height:1.6; }
-    ul { font-size:14px; color:#666; line-height:1.7; padding-left:20px; }
+    h1 { font-size:22px; font-weight:600; color:var(--text-main); margin:0 0 8px; }
+    h2 { font-size:17px; font-weight:600; color:var(--text-main); margin:1.6rem 0 8px; }
+    p { font-size:14px; color:var(--text-muted); line-height:1.6; }
+    ul { font-size:14px; color:var(--text-muted); line-height:1.7; padding-left:20px; }
     a { color:#1D9E75; }
-    .calc-card { background:#f5f5f5; border-radius:12px; padding:1.25rem; margin-bottom:1rem; }
+    .calc-card { background:var(--bg-stat); border-radius:12px; padding:1.25rem; margin-bottom:1rem; }
     .input-group { margin-bottom:1rem; }
-    .input-group label { font-size:13px; color:#666; display:block; margin-bottom:5px; }
+    .input-group label { font-size:13px; color:var(--text-muted); display:block; margin-bottom:5px; }
     .input-group input, .input-group select {
-      width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
-      font-size:15px; background:#fff; box-sizing:border-box;
+      width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px;
+      font-size:15px; background:var(--bg-input); box-sizing:border-box;
     }
     .calc-btn {
       width:100%; padding:12px; background:#1D9E75; color:white; border:none;
@@ -30,40 +32,47 @@
     }
     .calc-btn:hover { background:#178060; }
     .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:1rem; }
-    .result-item { background:#fff; border-radius:10px; padding:12px; text-align:center; border:1px solid #eee; }
-    .result-item.highlight { background:#f0faf6; border-color:#1D9E75; grid-column:1 / -1; }
-    .result-val { font-size:22px; font-weight:700; color:#1a1a1a; }
+    .result-item { background:var(--bg-card); border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border); }
+    .result-item.highlight { background:var(--accent-soft); border-color:#1D9E75; grid-column:1 / -1; }
+    .result-val { font-size:22px; font-weight:700; color:var(--text-main); }
     .result-item.highlight .result-val { font-size:28px; color:#1D9E75; }
-    .result-lbl { font-size:11px; color:#666; margin-top:3px; }
-    .divider { border:none; border-top:1px solid #eee; margin:1.5rem 0; }
+    .result-lbl { font-size:11px; color:var(--text-muted); margin-top:3px; }
+    .divider { border:none; border-top:1px solid var(--border); margin:1.5rem 0; }
     .info-box {
       background:#FFF9C4; border-left:4px solid #F5C623; border-radius:8px;
       padding:10px 14px; font-size:13px; color:#7A5800; margin-bottom:1rem;
     }
-    .faq-list dt { font-weight:600; color:#1a1a1a; margin-top:0.75rem; font-size:14px; }
-    .faq-list dd { margin-left:0; color:#666; font-size:14px; }
-    .table-note { font-size:12px; color:#999; margin-top:-0.5rem; }
+    .faq-list dt { font-weight:600; color:var(--text-main); margin-top:0.75rem; font-size:14px; }
+    .faq-list dd { margin-left:0; color:var(--text-muted); font-size:14px; }
+    .table-note { font-size:12px; color:var(--text-muted); margin-top:-0.5rem; }
     table { width:100%; border-collapse:collapse; font-size:13px; margin:10px 0; }
-    th, td { text-align:left; padding:8px; border-bottom:1px solid #eee; color:#444; }
-    th { background:#f5f5f5; color:#333; }
-    .cta-box { background:#f0faf6; border-radius:10px; padding:12px 16px; margin:1rem 0; }
+    th, td { text-align:left; padding:8px; border-bottom:1px solid var(--border); color:var(--text-main); }
+    th { background:var(--bg-stat); color:var(--text-main); }
+    .cta-box { background:var(--accent-soft); border-radius:10px; padding:12px 16px; margin:1rem 0; }
     .cta-box p { margin:0; font-size:13px; }
-    .sml { color:#999; font-size:11px; margin-top:4px; display:block; }
+    .sml { color:var(--text-muted); font-size:11px; margin-top:4px; display:block; }
     .spor-head { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
     .spor-row { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
-    .spor-row input { padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff; box-sizing:border-box; }
+    .spor-row input { padding:8px; border:1px solid var(--border); border-radius:8px; font-size:14px; background:var(--bg-input); box-sizing:border-box; }
     .spor-row .s-name { flex:2; min-width:0; }
     .spor-row .s-pct { width:64px; }
     .spor-row .s-sum { width:78px; }
     .spor-row .s-ore { width:70px; }
-    .spor-del { background:#fff; border:1px solid #f3c2c2; color:#c0392b; border-radius:8px; cursor:pointer; font-size:15px; width:34px; height:34px; flex:none; }
-    .add-spor { background:#fff; border:1px dashed #1D9E75; color:#1D9E75; border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; }
-    .add-spor:hover { background:#f0faf6; }
-    .pull-btn { background:#eef7f3; border:1px solid #1D9E75; color:#1D9E75; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
-    .pull-btn:hover { background:#dff2ea; }
+    .spor-del { background:var(--bg-input); border:1px solid #f3c2c2; color:#c0392b; border-radius:8px; cursor:pointer; font-size:15px; width:34px; height:34px; flex:none; }
+    .add-spor { background:var(--bg-input); border:1px dashed #1D9E75; color:#1D9E75; border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; }
+    .add-spor:hover { background:var(--accent-soft); }
+    .pull-btn { background:var(--accent-soft); border:1px solid #1D9E75; color:#1D9E75; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .pull-btn:hover { background:var(--accent-soft); }
     .inline-field { display:flex; gap:10px; align-items:center; }
     .inline-field input { flex:1; min-width:0; }
     .field-note { font-size:11px; color:#1D9E75; min-height:14px; margin-top:4px; }
+  
+    .info-box { background:var(--accent-soft); border-left-color:var(--accent); color:var(--text-main); }
+    h1,h2,h3 { color:var(--text-main); }
+    a { color:var(--accent); }
+    .calc-btn { border-radius:14px; min-height:48px; }
+    .msg-err { color:#c0392b; font-size:13px; margin:6px 0; min-height:16px; }
+    .tools-line { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   </style>
 </head>
 <body>
@@ -107,7 +116,7 @@
       </div>
 
       <div class="input-group">
-        <label>Ore suplimentare în luna asta</label>
+        <label>Ore suplimentare plătite în luna asta</label>
         <div style="display:flex; gap:10px;">
           <input type="number" id="ore-extra" placeholder="ex: 10" min="0" step="1" value="0" style="flex:2" />
           <div style="flex:1; position:relative;">
@@ -115,11 +124,11 @@
             <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#666; font-size:13px; pointer-events:none;">%</span>
           </div>
         </div>
-        <small class="sml">Sporul legal minim e 75%. Modifică dacă firma ta aplică alt procent.</small>
+        <small class="sml">Pune doar orele PLĂTITE în bani: se plătesc ore × tarif orar × (100% + spor). Cele compensate cu timp liber (regula generală, în 90 de zile) nu se plătesc — lasă 0. Sporul legal minim este 75%.</small>
       </div>
 
       <div class="input-group">
-        <label>Ore de weekend + zile libere legale (SDSL)</label>
+        <label>Ore de weekend (SDSL)</label>
         <div class="inline-field">
           <input type="number" id="ore-weekend" placeholder="ex: 16" min="0" step="1" value="0" />
           <button type="button" class="pull-btn" id="pull-weekend">📅 Preia SDSL din calendar</button>
@@ -132,6 +141,15 @@
           </div>
         </div>
         <small class="sml">Se actualizează automat din calendar cu orele care cad efectiv sâmbăta, duminica sau într-o zi liberă legală, în luna și anul alese. Turele care trec de miezul nopții se împart la 23:59 / 00:00; orele de noapte lucrate în zile de lucru <b>nu</b> sunt SDSL. Îl poți edita manual; butonul „Preia SDSL” recalculează din calendar.</small>
+      </div>
+
+      <div class="input-group">
+        <label>Ore în zile libere legale (SDSL, partea de sărbători)</label>
+        <div class="inline-field">
+          <input type="number" id="ore-legale" min="0" step="1" value="0" />
+          <div style="flex:1; position:relative;"><input type="number" id="procent-legale" min="0" max="300" step="1" value="100" style="width:100%; padding-right:28px; box-sizing:border-box;" /><span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;">%</span></div>
+        </div>
+        <small class="sml">Sporul pentru munca în zile libere legale este de minimum 100% din salariul de bază, dacă nu primești timp liber în schimb (art. 139). Orele de weekend de mai sus se calculează separat.</small>
       </div>
 
       <div class="input-group">
@@ -172,6 +190,8 @@
         </select>
       </div>
 
+      <label class="chk" style="display:flex;gap:8px;align-items:center;margin:0 0 12px;font-size:14px;color:var(--text-main)"><input type="checkbox" id="sub26" style="width:auto" /> Am sub 26 de ani (deducere suplimentară)</label>
+      <div class="msg-err" id="calc-err"></div>
       <button class="calc-btn" id="calc-btn">Calculează salariul net</button>
     </div>
 
@@ -240,6 +260,7 @@
   </div>
 
   <script src="holidays-data.js"></script>
+  <script src="modules/salary.js"></script>
   <script src="mechanics-data.js"></script>
   <script>
     var BONUS_KEY = 'salariu-net-sporuri-v1';
@@ -325,8 +346,15 @@
     function normaFor(y, m) {
       if (NORMA[y] && NORMA[y][m] != null) return NORMA[y][m];
       var wd = 0, dim = new Date(y, m + 1, 0).getDate();
-      for (var d = 1; d <= dim; d++) { var dow = new Date(y, m, d).getDay(); if (dow !== 0 && dow !== 6) wd++; }
+      for (var d = 1; d <= dim; d++) { var dow = new Date(y, m, d).getDay(); if (dow !== 0 && dow !== 6 && !isLegalDate(new Date(y, m, d))) wd++; }
       return wd * 8;
+    }
+    // Paște ortodox și Rusalii pentru orice an (când anul nu e în datele înglobate).
+    function movableLegal(y) {
+      var a = y % 4, b = y % 7, c = y % 19, dd = (19 * c + 15) % 30, e = (2 * a + 4 * b - dd + 34) % 7;
+      var mo = Math.floor((dd + e + 114) / 31), da = ((dd + e + 114) % 31) + 1, out = {};
+      [-2, 0, 1, 49, 50].forEach(function (n) { var t = new Date(y, mo - 1, da + 13 + n); out[t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()] = 1; });
+      return out;
     }
     function isLegalDate(dt) {
       var y = dt.getFullYear(), m = dt.getMonth(), d = dt.getDate();
@@ -335,7 +363,7 @@
       // O zi de vacanță sau o punte nu devine ZL doar pentru că e colorată altfel.
       var rules = HDAY.legalRules;
       if (rules && rules.fixed) {
-        var mv = (rules.movable || {})[y] || {};
+        var mv = (rules.movable || {})[y] || movableLegal(y);
         return !!((rules.fixed)[(m + 1) + '-' + d] || mv[k]);
       }
       var v = HDAY.days && HDAY.days[k];
@@ -558,14 +586,15 @@
     function preiaWeekend() {
       var y = selY(), m = selM();
       var det = sdslDinCalendarDetails(y, m);
-      document.getElementById('ore-weekend').value = det.total;
+      document.getElementById('ore-weekend').value = det.weekend;
+      var ol = document.getElementById('ore-legale'); if (ol) ol.value = det.legal;
       var nota = document.getElementById('weekend-note');
-      if (nota) nota.innerHTML = '✓ Preluat din calendar: <b>' + det.total + 'h</b> SDSL (' + MONTHS[m] + ' ' + y + ')' +
+      if (nota) nota.innerHTML = '✓ Preluat din calendar pentru ' + MONTHS[m] + ' ' + y + ': <b>' + det.weekend + 'h</b> weekend și <b>' + det.legal + 'h</b> zile libere legale (SDSL total ' + det.total + 'h)' +
         ' · din weekend ' + det.weekend + 'h · din zile libere legale ' + det.legal + 'h · din ture de noapte ' + det.night + 'h.' +
         (det.nightOutside > 0 ? ' <b>' + det.nightOutside + 'h</b> din ture de noapte în zile de lucru <b>nu</b> sunt SDSL.' : '') +
         ' Poți edita.';
       try {
-        localStorage.setItem(sdslKey(y, m), String(det.total));
+        localStorage.setItem(sdslKey(y, m), String(det.weekend));
         localStorage.setItem(manualKey(y, m), '0');
       } catch (e) {}
     }
@@ -612,68 +641,54 @@
 
     function calculeaza() {
       var brut = parseFloat(document.getElementById('brut').value) || 0;
-      var oreNoapte = parseFloat(document.getElementById('ore-noapte').value) || 0;
-      var oreExtra = parseFloat(document.getElementById('ore-extra').value) || 0;
-      var oreWeekend = parseFloat(document.getElementById('ore-weekend').value) || 0;
-      var norma = parseFloat(document.getElementById('norma-select').value) || 160;
-      var dependenti = parseInt(document.getElementById('dependenti').value) || 0;
-
-      if (brut <= 0) { alert('Introdu salariul brut de bază.'); return; }
-
-      var tarifOrar = brut / norma;
-      var procentNoapte = (parseFloat(document.getElementById('procent-noapte').value) || 25) / 100;
-      var procentExtra = (parseFloat(document.getElementById('procent-extra').value) || 75) / 100;
-      var sporNoapte = round2(oreNoapte * tarifOrar * procentNoapte);
-      var sporExtra = round2(oreExtra * tarifOrar * procentExtra);
-      var procentWeekend = (parseFloat(document.getElementById('procent-weekend').value) || 0) / 100;
-      var sporWeekend = round2(oreWeekend * tarifOrar * procentWeekend);
-
+      var err = document.getElementById('calc-err'); err.textContent = '';
+      if (brut <= 0) { err.textContent = 'Introdu salariul brut de bază.'; document.getElementById('brut').focus(); return; }
+      var num = function (id, d) { var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? d : v; };
+      var norma = num('norma-select', 160), y = selY(), m = selM();
+      var tarif = brut / norma;
+      var oreNoapte = num('ore-noapte', 0), oreExtra = num('ore-extra', 0), oreWeekend = num('ore-weekend', 0), oreLegale = num('ore-legale', 0);
       var sporuri = readSporuri();
-      var sporCustomTotal = 0;
+      var altele = SalaryCalc.customSporuri(sporuri, brut, tarif);
       var detalii = [];
       sporuri.forEach(function (b) {
-        // Procentul se aplică la brut (ca înainte) sau la valoarea orelor, când există ore.
-        var dinProcent = (b.ore > 0)
-          ? b.ore * tarifOrar * (b.pct > 0 ? b.pct / 100 : 1)
-          : brut * (b.pct / 100);
-        var valoare = round2(dinProcent + b.suma);
-        if (valoare === 0) return;
-        sporCustomTotal = round2(sporCustomTotal + valoare);
-        detalii.push({ name: b.name || 'Spor adăugat', valoare: valoare });
+        var v = SalaryCalc.customSporuri([b], brut, tarif);
+        if (v) detalii.push({ name: b.name || 'Spor adăugat', valoare: v });
       });
       saveSporuri();
-      try { localStorage.setItem(sdslKey(selY(), selM()), String(oreWeekend)); } catch (e) {}
-      try { localStorage.setItem(nightKey(selY(), selM()), String(oreNoapte)); } catch (e) {}
-
-      var totalSporuri = round2(sporNoapte + sporExtra + sporWeekend + sporCustomTotal);
-      var brutTotal = round2(brut + totalSporuri);
-
-      var cas = round2(brutTotal * 0.25);
-      var cass = round2(brutTotal * 0.10);
-      var deducere = getDeducere(brut, dependenti);
-      var bazaImpozit = Math.max(0, brutTotal - cas - cass - deducere);
-      var impozit = round2(bazaImpozit * 0.10);
-      var net = round2(brutTotal - cas - cass - impozit);
-
+      try { localStorage.setItem(sdslKey(y, m), String(oreWeekend)); localStorage.setItem(nightKey(y, m), String(oreNoapte)); } catch (e) {}
+      var r = SalaryCalc.compute({ y: y, m: m, brut: brut, norma: norma, oreNoapte: oreNoapte, oreExtra: oreExtra, oreWeekend: oreWeekend, oreLegale: oreLegale,
+        pNoapte: num('procent-noapte', 25), pExtra: num('procent-extra', 75), pWeekend: num('procent-weekend', 0), pLegal: num('procent-legale', 100),
+        dep: parseInt(document.getElementById('dependenti').value) || 0, sub26: document.getElementById('sub26').checked, altele: altele });
+      persistSalary();
       document.getElementById('rezultate').style.display = 'block';
-
-      var infoText = 'Tarif orar: ' + tarifOrar.toFixed(2) + ' lei/oră';
-      if (oreNoapte > 0) infoText += ' · Spor noapte: +' + fmt(sporNoapte) + ' lei';
-      if (oreWeekend > 0) infoText += ' · Spor SDSL: +' + fmt(sporWeekend) + ' lei';
-      if (oreExtra > 0) infoText += ' · Spor ore extra: +' + fmt(sporExtra) + ' lei';
+      var infoText = 'Tarif orar: ' + r.tarif.toFixed(2) + ' lei/oră · salariul minim în ' + MONTHS[m] + ' ' + y + ': ' + fmt(r.salariuMinim) + ' lei';
+      if (oreNoapte > 0) infoText += ' · Spor noapte: +' + fmt(r.sporNoapte) + ' lei';
+      if (oreWeekend > 0) infoText += ' · Spor weekend: +' + fmt(r.sporWeekend) + ' lei';
+      if (oreLegale > 0) infoText += ' · Spor zile libere legale: +' + fmt(r.sporLegal) + ' lei';
+      if (oreExtra > 0) infoText += ' · Ore suplimentare plătite: +' + fmt(round2(r.extraOre + r.sporExtra)) + ' lei';
+      if (r.scutit) infoText += ' · Sumă netaxabilă (salariu minim): ' + fmt(r.scutit) + ' lei';
       detalii.forEach(function (d) { infoText += ' · ' + d.name + ': +' + fmt(d.valoare) + ' lei'; });
       document.getElementById('info-box').textContent = infoText;
-
+      var it = function (v, l, c) { return '<div class="result-item' + (c ? ' ' + c : '') + '"><div class="result-val">' + v + '</div><div class="result-lbl">' + l + '</div></div>'; };
       document.getElementById('result-grid').innerHTML =
-        '<div class="result-item highlight"><div class="result-val">' + fmt(net) + ' lei</div><div class="result-lbl">Salariu NET de încasat</div></div>' +
-        '<div class="result-item"><div class="result-val">' + fmt(brutTotal) + ' lei</div><div class="result-lbl">Brut total (cu sporuri)</div></div>' +
-        '<div class="result-item"><div class="result-val">' + fmt(totalSporuri) + ' lei</div><div class="result-lbl">Sporuri adăugate (total)</div></div>' +
-        '<div class="result-item"><div class="result-val">' + fmt(cas) + ' lei</div><div class="result-lbl">CAS — pensie (25%)</div></div>' +
-        '<div class="result-item"><div class="result-val">' + fmt(cass) + ' lei</div><div class="result-lbl">CASS — sănătate (10%)</div></div>' +
-        '<div class="result-item"><div class="result-val">' + fmt(impozit) + ' lei</div><div class="result-lbl">Impozit venit (10%)</div></div>' +
-        '<div class="result-item"><div class="result-val">' + fmt(deducere) + ' lei</div><div class="result-lbl">Deducere personală</div></div>';
-
-      document.getElementById('rezultate').scrollIntoView({ behavior: 'smooth' });
+        it(fmt(r.net) + ' lei', 'Salariu NET de încasat', 'highlight') + it(fmt(r.brutTotal) + ' lei', 'Brut total (cu sporuri)') + it(fmt(r.totalSporuri) + ' lei', 'Sporuri și ore plătite în plus') +
+        it(fmt(r.cas) + ' lei', 'CAS — pensie (25%)') + it(fmt(r.cass) + ' lei', 'CASS — sănătate (10%)') + it(fmt(r.impozit) + ' lei', 'Impozit venit (10%)') + it(fmt(r.deducere) + ' lei', 'Deducere personală');
+    }
+    function persistSalary() {
+      try {
+        var raw = localStorage.getItem('ore-ture-state-v1'); if (!raw) return;
+        var st = JSON.parse(raw), c = (st.calendars || []).filter(function (x) { return x.id === st.activeId; })[0] || (st.calendars || [])[0]; if (!c) return;
+        var num = function (id, d) { var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? d : v; };
+        c.salary = { brut: num('brut', ''), dep: parseInt(document.getElementById('dependenti').value) || 0, sub26: document.getElementById('sub26').checked,
+          pNoapte: num('procent-noapte', 25), pExtra: num('procent-extra', 75), pWeekend: num('procent-weekend', 50), pLegal: num('procent-legale', 100), platite: num('ore-extra', 0) > 0 };
+        localStorage.setItem('ore-ture-state-v1', JSON.stringify(st));
+      } catch (e) {}
+    }
+    function loadSalary() {
+      var c = activeCalendar(); if (!c || !c.salary) return; var s = c.salary;
+      var set = function (id, v) { var e = document.getElementById(id); if (e && v !== undefined && v !== '' && v !== null) e.value = v; };
+      set('brut', s.brut); set('dependenti', s.dep); set('procent-noapte', s.pNoapte); set('procent-extra', s.pExtra); set('procent-weekend', s.pWeekend); set('procent-legale', s.pLegal);
+      document.getElementById('sub26').checked = !!s.sub26;
     }
 
     document.getElementById('add-spor').addEventListener('click', function () { addSpor('', '', '', ''); });
@@ -707,6 +722,7 @@
     });
     loadSporuri();
     initPeriod();
+    loadSalary();
     loadWeekend();
     loadNoapte();
     if (!document.querySelector('#alte-sporuri .spor-row')) addSpor('', '', '', '');
